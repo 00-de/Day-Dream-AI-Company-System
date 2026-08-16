@@ -1,22 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { AiStaff } from '../types'
-import { AI_STAFF, STAFF_GROUP_LABEL, countStaffStatus } from '../data/staff'
-import {
-  FINANCE,
-  SALES_TREND,
-  PROFIT_TREND,
-  SCHEDULE,
-  NOTICES,
-  PROJECTS,
-  PROJECT_SUMMARY,
-  FILES,
-  STORAGE,
-  SYSTEM_STATUS,
-  SYSTEM_METRICS,
-  NETWORK,
-  BACKUP,
-  yen,
-} from '../data/mock'
+import { STAFF_GROUP_LABEL, countStaffStatus, yen } from '../data/defaults'
+import { useData } from '../lib/data'
 import { Panel, MoreLink, ProgressBar, StateBadge, ACCENT, StatusDot } from '../components/Ui'
 import { Donut, Sparkline } from '../components/Charts'
 import { StaffCard } from '../components/StaffCard'
@@ -37,13 +22,33 @@ const TOOLS = [
 ]
 
 export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
+  const { data } = useData()
   const [group, setGroup] = useState<'all' | 'core' | 'member' | 'staff'>('all')
   const [selected, setSelected] = useState<AiStaff | null>(null)
-  const s = countStaffStatus()
+
+  // Firestore（または端末内）のデータを使う
+  const {
+    finance: FINANCE,
+    salesTrend: SALES_TREND,
+    profitTrend: PROFIT_TREND,
+    schedule: SCHEDULE,
+    notices: NOTICES,
+    projects: PROJECTS,
+    projectSummary: PROJECT_SUMMARY,
+    files: FILES,
+    storage: STORAGE,
+    systemStatus: SYSTEM_STATUS,
+    systemMetrics: SYSTEM_METRICS,
+    network: NETWORK,
+    backup: BACKUP,
+    staff: AI_STAFF,
+  } = data
+
+  const s = countStaffStatus(AI_STAFF)
 
   const list = useMemo(
     () => (group === 'all' ? AI_STAFF : AI_STAFF.filter((x) => x.group === group)),
-    [group],
+    [group, AI_STAFF],
   )
 
   return (

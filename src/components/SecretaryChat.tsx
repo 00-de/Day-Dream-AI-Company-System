@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChatMessage } from '../types'
-import { CHAT_GREETING, SCHEDULE, FINANCE, yen } from '../data/mock'
-import { countStaffStatus } from '../data/staff'
+import { CHAT_GREETING, yen, countStaffStatus } from '../data/defaults'
+import { useData } from '../lib/data'
+import type { AppData } from '../types'
 import { IconSend } from './Icons'
 
 /* ============================================================
@@ -16,9 +17,13 @@ function nowTime() {
 }
 
 /** キーワード応答エンジン */
-function askSecretary(text: string): string {
+function askSecretary(text: string, data: AppData): string {
   const t = text.toLowerCase()
-  const staff = countStaffStatus()
+  const staff = countStaffStatus(data.staff)
+  const SCHEDULE = data.schedule
+  const FINANCE = data.finance
+  const LIVE = data.nextLive
+  const YT = data.youtube
 
   if (/予定|スケジュール|今日/.test(text)) {
     return '今日の予定です。\n' + SCHEDULE.map((s) => `・${s.time} ${s.title}`).join('\n')
@@ -38,10 +43,13 @@ function askSecretary(text: string): string {
     return 'MV制作はCapCut連携で進行できます。現在のMV制作プロジェクトは60%まで完了しています。'
   }
   if (/ライブ|会場|チケット/.test(text)) {
-    return '次回ライブは 2026年8月15日、垂井町文化会館 大ホールです。準備進捗は75%、残タスクはチケット販売です。'
+    const rest = LIVE.checks.filter((c) => !c.done).map((c) => c.label)
+    return `次回ライブは ${LIVE.date}、${LIVE.venue} で「${LIVE.title}」です。準備進捗は ${LIVE.progress}%${
+      rest.length ? `、残りは「${rest.join('・')}」です。` : '、準備は完了しています。'
+    }`
   }
   if (/youtube|再生|登録者/.test(t)) {
-    return 'YouTubeは登録者18,250人（今月 +1,245人）、総再生回数2,456,789回です。「みんな笑顔になれ MV」が伸びています。'
+    return `YouTubeは登録者 ${YT.subscribers}人（今月 ${YT.subscribersDiff}）、総再生回数 ${YT.views}回、総視聴時間 ${YT.watchHours}時間です。`
   }
   if (/ありがとう|thanks/.test(t)) {
     return 'どういたしまして。いつでも呼んでください、トシさん。'
@@ -53,6 +61,7 @@ function askSecretary(text: string): string {
 }
 
 export function SecretaryChat({ compact = false }: { compact?: boolean }) {
+  const { data } = useData()
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: 'greet', from: 'ai', text: CHAT_GREETING, time: nowTime() },
   ])
@@ -71,7 +80,10 @@ export function SecretaryChat({ compact = false }: { compact?: boolean }) {
     setInput('')
     setThinking(true)
     window.setTimeout(() => {
-      setMessages((m) => [...m, { id: `a${Date.now()}`, from: 'ai', text: askSecretary(text), time: nowTime() }])
+      setMessages((m) => [
+        ...m,
+        { id: `a${Date.now()}`, from: 'ai', text: askSecretary(text, data), time: nowTime() },
+      ])
       setThinking(false)
     }, 550)
   }

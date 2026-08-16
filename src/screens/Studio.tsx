@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react'
-import {
-  NOW_PLAYING,
-  SONGS,
-  GALLERY,
-  YOUTUBE,
-  YOUTUBE_TREND,
-  VIDEOS,
-  NEXT_LIVE,
-  LIVES,
-  FILES,
-  STORAGE,
-} from '../data/mock'
+import { GALLERY } from '../data/defaults'
+import { useData } from '../lib/data'
 import { Panel, MoreLink, ProgressBar, ACCENT } from '../components/Ui'
 import { Donut, Sparkline, Waveform } from '../components/Charts'
 import {
@@ -67,6 +57,19 @@ function Thumb({ src, label, ratio = 'aspect-video' }: { src?: string; label?: s
 }
 
 export function Studio() {
+  const { data } = useData()
+  const {
+    nowPlaying: NOW_PLAYING,
+    songs: SONGS,
+    youtube: YOUTUBE,
+    youtubeTrend: YOUTUBE_TREND,
+    videos: VIDEOS,
+    nextLive: NEXT_LIVE,
+    lives: LIVES,
+    files: FILES,
+    storage: STORAGE,
+  } = data
+
   const [playing, setPlaying] = useState(false)
   const [pos, setPos] = useState(NOW_PLAYING.progress)
   const [tab, setTab] = useState<'lyrics' | 'compose' | 'bgm' | 'manage'>('lyrics')

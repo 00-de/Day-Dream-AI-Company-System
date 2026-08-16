@@ -84,3 +84,95 @@ export interface ChatMessage {
   text: string
   time: string
 }
+
+/* ============================================================
+   フェーズ2：Firestore に保存するデータ全体の型
+   ============================================================ */
+
+/** 経営数値 */
+export interface Finance {
+  monthSales: number
+  monthSalesDiff: string
+  monthProfit: number
+  monthProfitDiff: string
+  goal: number
+  achieved: number
+  goalRate: number
+  daysLeft: number
+}
+
+/** 会社情報 */
+export interface Company {
+  name: string
+  system: string
+  subtitle: string
+  presidentName: string
+  version: string
+}
+
+/** ライブ準備チェック項目 */
+export interface LiveCheck {
+  label: string
+  done: boolean
+}
+
+/** 次回ライブ */
+export interface NextLive {
+  date: string
+  title: string
+  venue: string
+  progress: number
+  checks: LiveCheck[]
+}
+
+/** YouTube 指標 */
+export interface YoutubeStats {
+  subscribers: string
+  subscribersDiff: string
+  views: string
+  viewsDiff: string
+  watchHours: string
+  watchHoursDiff: string
+}
+
+/** ファイル種別 */
+export interface FileKind {
+  icon: string
+  label: string
+  count: number
+}
+
+/** システム使用率 */
+export interface SystemMetric {
+  label: string
+  value: number
+  accent: 'cyan' | 'blue' | 'purple' | 'pink' | 'green' | 'amber'
+}
+
+/** Firestore に保存するアプリ全体のデータ */
+export interface AppData {
+  company: Company
+  finance: Finance
+  salesTrend: number[]
+  profitTrend: number[]
+  youtubeTrend: number[]
+  schedule: ScheduleItem[]
+  notices: NoticeItem[]
+  projects: ProjectItem[]
+  projectSummary: { running: number; done: number; hold: number }
+  nowPlaying: { title: string; credit: string; current: string; total: string; progress: number }
+  songs: Song[]
+  youtube: YoutubeStats
+  videos: VideoItem[]
+  nextLive: NextLive
+  lives: LiveItem[]
+  files: FileKind[]
+  storage: { used: number; total: number; unit: string }
+  systemStatus: SystemStatus[]
+  systemMetrics: SystemMetric[]
+  network: { speed: number; unit: string }
+  backup: { last: string; next: string; state: string }
+  staff: AiStaff[]
+  /** 最終更新（表示用のISO文字列） */
+  updatedAt?: string
+}

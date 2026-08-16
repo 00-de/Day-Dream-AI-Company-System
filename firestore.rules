@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// ============================================================
+// Firestore セキュリティルール
+// Firebaseコンソール → Firestore Database → ルール に
+// この内容をそのまま貼り付けて「公開」してください。
+//
+// ・ログインした人だけが読み書きできます
+// ・社長のUIDだけに限定したい場合は、下の ALLOWED_UID を書き換えて
+//   isPresident() を使う行のコメントを入れ替えてください
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // 社長だけに限定する場合はここにUIDを入れます
+    // （FirebaseコンソールのAuthentication → ユーザー でUIDを確認できます）
+    function isPresident() {
+      return isSignedIn() && request.auth.uid == 'ここに社長のUID';
+    }
+
+    // ダッシュボードのデータ
+    match /system/{docId} {
+      allow read, write: if isSignedIn();
+      // 社長だけに限定する場合は上の行を消して、次の行を使います
+      // allow read, write: if isPresident();
+    }
+
+    // それ以外はすべて拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

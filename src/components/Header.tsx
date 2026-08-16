@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { COMPANY } from '../data/mock'
-import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers } from './Icons'
+import { useData } from '../lib/data'
+import { useAuth } from '../lib/auth'
+import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit } from './Icons'
 import { StatusDot } from './Ui'
 
 /* ============================================================
@@ -30,14 +31,19 @@ export function Header({
   onChangeScreen,
   onOpenNotices,
   onOpenSettings,
+  onOpenEdit,
   noticeCount,
 }: {
   screen: ScreenKey
   onChangeScreen: (s: ScreenKey) => void
   onOpenNotices: () => void
   onOpenSettings: () => void
+  onOpenEdit: () => void
   noticeCount: number
 }) {
+  const { data } = useData()
+  const { signOut, demo } = useAuth()
+  const COMPANY = data.company
   const [activeKey, setActiveKey] = useState<string>('management')
   const [clock, setClock] = useState(() => new Date())
 
@@ -108,6 +114,15 @@ export function Header({
 
           <button
             type="button"
+            onClick={onOpenEdit}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+          >
+            <IconEdit className="w-4 h-4" />
+            データ編集
+          </button>
+
+          <button
+            type="button"
             onClick={onOpenSettings}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
           >
@@ -140,11 +155,26 @@ export function Header({
             社
           </div>
           <div className="leading-tight hidden md:block">
-            <p className="text-[12px] text-slate-200">社長：{COMPANY.presidentName}</p>
+            <p className="text-[12px] text-slate-200">
+              社長：{COMPANY.presidentName}
+              {demo && (
+                <span className="ml-1.5 text-[9px] px-1.5 py-[1px] rounded bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/30">
+                  見るだけ
+                </span>
+              )}
+            </p>
             <p className="text-[10px] text-slate-500 flex items-center gap-1">
               <StatusDot /> {COMPANY.name}
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="text-[11px] px-2.5 py-1.5 rounded-lg text-slate-400 ring-1 ring-white/10 hover:text-red-300 hover:ring-red-400/40 transition"
+          >
+            ログアウト
+          </button>
         </div>
       </div>
     </header>

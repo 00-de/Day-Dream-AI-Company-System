@@ -1,44 +1,106 @@
-# DayDream AI Company System v1.0.0
+# DayDream AI Company System v1.1.0
 
 社長1人 ＋ AI社員23人による、次世代型AIエンターテインメント会社の統合ダッシュボードです。
-イメージ画像のデザイン（ディープナイトシティ／ネオングロー）をそのまま再現しています。
+
+- **フェーズ1**：2画面のUI（完了）
+- **フェーズ2**：Firebase Auth（社長ログイン）＋ Firestore 連携 ← いまここ
 
 ---
 
-## 画面構成（2画面）
+## フェーズ2でできるようになったこと
 
-### 画面① 経営・AI社員ダッシュボード
-- 売上サマリー／利益サマリー（スパークライングラフ）
-- 目標達成率／AI稼働状況（ドーナツゲージ）
-- 今日の予定
-- AI社員23人（すべて／コア部門／メンバーAI／運営スタッフAIで絞り込み・カードをクリックで詳細）
-- ファイル管理／自動バックアップ／システム監視
-- AI秘書チャット（その場で応答します）
-- 右側：お知らせ・アラート／制作・運用ツール／プロジェクト状況／システムステータス
-
-### 画面② クリエイティブスタジオ
-- 音楽制作（作詞・作曲・BGM生成・編曲タブ＋波形プレイヤー）
-- 画像生成（Genspark連携イメージ・プロンプト入力・ギャラリー）
-- MV制作（CapCut連携イメージ・字幕／エフェクト／音声同期）
-- ライブ管理（次回ライブ・準備チェック・進捗ゲージ）
-- YouTube管理（登録者・再生回数・視聴時間・人気動画）
-- ファイル管理（種類別ファイル数・ストレージ使用量）
+1. **社長ログイン** … メールアドレスとパスワードでログインします
+2. **見るだけモード** … Firebase未設定でも全画面を確認できます（保存はこの端末の中だけ）
+3. **データ編集** … ヘッダーの「データ編集」から、画面の数字・文章をその場で書き換えて保存
+   - 経営数値（売上・利益・目標・達成率）
+   - 予定・お知らせ（追加・削除もできます）
+   - プロジェクト（進捗はスライダーで調整）
+   - AI社員23人（担当・稼働状況・タスク数）
+   - YouTube指標・次回ライブ
+4. **リアルタイム同期** … パソコンで変更したらスマホ側も自動で書き換わります
+5. **AI秘書チャット** … 保存したデータを見て答えるようになりました
 
 ---
 
-## 使い方（ターミナル不要・GUIだけで進められます）
+## セットアップ（ターミナル不要）
 
-### 1. GitHub Desktop に取り込む
-1. このフォルダの中身を、GitHub Desktop で作成したリポジトリのフォルダにコピーします
+### 手順1：Firebaseプロジェクトを作る
+
+1. [Firebaseコンソール](https://console.firebase.google.com/) で「プロジェクトを追加」
+2. 左メニュー **Authentication** → 「始める」 → **メール／パスワード** を有効にする
+3. 「Users」タブ → 「ユーザーを追加」で、社長用のメールアドレスとパスワードを登録
+4. 左メニュー **Firestore Database** → 「データベースの作成」→ 本番環境モードで作成
+5. Firestore の **ルール** タブを開き、同梱の `firestore.rules` の中身を貼り付けて「公開」
+6. 左メニュー **プロジェクトの設定** → 「マイアプリ」→ ウェブアプリを追加し、
+   表示される `firebaseConfig` の6つの値を控えます
+
+### 手順2：環境変数を登録する
+
+**ローカルで動かす場合**
+`.env.example` をコピーして `.env` という名前にし、6つの値を貼り付けます。
+
+**Vercelの場合**
+Vercel のプロジェクト → **Settings → Environment Variables** に、次の6つを登録します。
+
+| 変数名 | 入れる値 |
+| --- | --- |
+| `VITE_FIREBASE_API_KEY` | apiKey |
+| `VITE_FIREBASE_AUTH_DOMAIN` | authDomain |
+| `VITE_FIREBASE_PROJECT_ID` | projectId |
+| `VITE_FIREBASE_STORAGE_BUCKET` | storageBucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | messagingSenderId |
+| `VITE_FIREBASE_APP_ID` | appId |
+
+登録したら **Deployments → 最新のデプロイ → Redeploy** を押してください（環境変数は再デプロイで反映されます）。
+
+> Firebaseのこの6つの値は、公開されても問題ない値なので `VITE_` を付けてOKです。
+> OpenAI・Groq などのAPIキーは絶対に `VITE_` を付けないでください（フェーズ3で対応します）。
+
+### 手順3：ログインドメインを許可する
+
+Firebaseコンソール → **Authentication → Settings → 承認済みドメイン** に、
+Vercelのドメイン（例：`your-app.vercel.app`）を追加してください。
+これを忘れるとログインできません。
+
+---
+
+## GitHub Desktop / Vercel の流れ
+
+1. このフォルダの中身をリポジトリのフォルダにコピー
 2. GitHub Desktop で「Commit to main」→「Push origin」
+3. Vercel が自動でビルド・公開します（Framework Preset は Vite、Build Command は `npm run build`、Output は `dist`）
 
-### 2. Vercel にデプロイする
-1. Vercel で「Add New… → Project」を選び、GitHubのリポジトリを選択
-2. 設定は自動判定されます（変更不要）
-   - Framework Preset : **Vite**
-   - Build Command : `npm run build`
-   - Output Directory : `dist`
-3. 「Deploy」を押せば完了です
+---
+
+## データの保存先
+
+| 状態 | 保存先 |
+| --- | --- |
+| ログイン中 | Firestore の `system / dashboard` ドキュメント |
+| 見るだけモード | この端末のブラウザ内（localStorage） |
+
+初期データは `src/data/defaults.ts` にあります。
+Firestore が空のときは、この初期データが自動で書き込まれます。
+「データ編集」の「初期値に戻す」で、いつでもこの状態に戻せます。
+
+---
+
+## ファイル構成
+
+```
+src/
+├ lib/
+│  ├ firebase.ts   Firebaseの初期化
+│  ├ auth.tsx      ログイン状態の管理
+│  └ data.tsx      Firestoreの読み書き
+├ data/
+│  └ defaults.ts   初期データ（AI社員23人・経営数値など）
+├ components/      ヘッダー・カード・グラフ・編集画面など
+├ screens/
+│  ├ Dashboard.tsx 画面① 経営・AI社員ダッシュボード
+│  └ Studio.tsx    画面② クリエイティブスタジオ
+└ App.tsx          ログイン判定と画面切り替え
+```
 
 ---
 
@@ -49,20 +111,7 @@
 | `public/avatars/` | AI社員のアバター画像（ファイル名は同フォルダのREADME.txt参照） |
 | `public/gallery/` | 画像生成ギャラリー・MVサムネイル・YouTubeサムネイル |
 
-画像が無くても、ネオンのプレースホルダーが自動表示されるのでエラーにはなりません。
-
----
-
-## データの書き換え
-
-表示される数字・文章はすべて下記2ファイルに集約しています。
-
-| ファイル | 内容 |
-| --- | --- |
-| `src/data/staff.ts` | AI社員23人（名前・担当・稼働状況・タスク数） |
-| `src/data/mock.ts` | 売上・スケジュール・お知らせ・楽曲・YouTube・ライブなど |
-
-次のフェーズで、この2ファイルを Firebase Firestore からの読み込みに差し替えます。
+画像が無くてもネオンのプレースホルダーが表示されるので、エラーにはなりません。
 
 ---
 
@@ -73,14 +122,14 @@
 | フロントエンド | React 18 + TypeScript |
 | ビルド | Vite 5 |
 | スタイル | Tailwind CSS 3 |
-| グラフ | 自作SVG（外部ライブラリなし・軽量） |
+| 認証・データベース | Firebase Auth / Firestore |
+| グラフ | 自作SVG（外部ライブラリなし） |
 | ホスティング | Vercel |
 
 ---
 
-## 次のフェーズ予定
+## 次のフェーズ
 
-1. Firebase Auth（社長ログイン）＋ Firestore 連携
-2. AI秘書チャットを Groq / Gemini / OpenAI に接続（APIキーはVercel関数側で管理）
-3. スケジュール・タスクの登録・編集機能
-4. Electron 化（Windowsデスクトップアプリ）
+- **フェーズ3**：AI秘書を Groq / Gemini / OpenAI に接続（Vercel関数でAPIキーを保護）
+- **フェーズ4**：タスク・楽曲・画像の実データ管理、Firebase Storage へのアップロード
+- **フェーズ5**：Electron化（Windowsデスクトップアプリ・自動アップデート）
