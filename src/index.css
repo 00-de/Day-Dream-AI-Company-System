@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   DayDream AI Company System - 基本スタイル
+   ディープナイトシティ / ネオングロー
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #05070f;
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* 背景のネオングリッド + 光のにじみ */
+.app-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    radial-gradient(900px 520px at 12% -6%, rgba(59, 130, 246, 0.18), transparent 60%),
+    radial-gradient(820px 520px at 88% -4%, rgba(168, 85, 247, 0.16), transparent 60%),
+    radial-gradient(1000px 600px at 50% 108%, rgba(34, 211, 238, 0.1), transparent 60%);
+}
+
+.app-bg::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(1200px 700px at 50% 20%, #000 30%, transparent 85%);
+  -webkit-mask-image: radial-gradient(1200px 700px at 50% 20%, #000 30%, transparent 85%);
+}
+
+/* パネル（カード）共通 */
+.panel {
+  position: relative;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(13, 21, 48, 0.92), rgba(8, 12, 26, 0.92));
+  border: 1px solid rgba(56, 189, 248, 0.14);
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.95);
+}
+
+.panel-hover {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.panel-hover:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px -4px rgba(34, 211, 238, 0.28);
+}
+
+/* 見出しラベル */
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #cbd5e1;
+}
+
+/* スクロールバー */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(8, 12, 26, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.28);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+/* キーボードフォーカスを必ず見えるようにする */
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* 動きを減らす設定を尊重する */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
