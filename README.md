@@ -1,4 +1,4 @@
-# DayDream AI Company System v1.5.0
+# DayDream AI Company System v1.6.0
 
 社長1人 ＋ AI社員23人による、次世代型AIエンターテインメント会社の統合ダッシュボードです。
 
@@ -8,7 +8,7 @@
 - **フェーズ4**：タスク管理＋Firebase Storage へのファイルアップロード（完了）
 - **AI会議ルーム**：AI社員を集めて議論・議事録・タスク化 ← 追加しました
 
-> ログインアカウントは `ACCOUNTS.md`、AI接続は `AI_SETUP.md`、ファイル管理の設定は `STORAGE_SETUP.md` に詳しく書いてあります。
+> アバター画像の作り方は `AVATAR_PROMPTS.md`、ログインアカウントは `ACCOUNTS.md`、AI接続は `AI_SETUP.md`、ファイル管理の設定は `STORAGE_SETUP.md` に詳しく書いてあります。
 
 ---
 
@@ -113,7 +113,7 @@ src/
 
 | 置き場所 | 内容 |
 | --- | --- |
-| `public/avatars/` | AI社員のアバター画像（ファイル名は同フォルダのREADME.txt参照） |
+| `public/avatars/` | AI社員23人のアバター（SVGが同梱済み。同名のPNGを置くと差し替わります） |
 | `public/gallery/` | 画像生成ギャラリー・MVサムネイル・YouTubeサムネイル |
 
 画像が無くてもネオンのプレースホルダーが表示されるので、エラーにはなりません。

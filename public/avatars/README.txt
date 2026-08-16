@@ -1,18 +1,30 @@
-【AI社員のアバター画像を入れる場所】
+【AI社員のアバター画像】
 
-このフォルダに下記のファイル名で画像（PNG / JPG）を置くと、
-自動的にAI社員カードに表示されます。
-画像が無い場合は、ネオンのイニシャルアバターが自動表示されます。
+このフォルダには、23人分のSVGアバターがすでに入っています。
+アプリを開けば、そのまま顔付きで表示されます。
 
-■ コア部門
-ceo.png / secretary.png / strategy.png / analyst.png / sales.png
-writer.png / marketer.png / designer.png / researcher.png
-programmer.png / qa.png / security.png / cloud.png
+■ 本物の画像に差し替えるには
+同じ名前の PNG を、このフォルダに置くだけです。
+（SVGは消さなくてOK。PNGが優先され、PNGが無い人はSVGのままになります）
 
-■ DayDream Plus メンバーAI
-yuma.png / aoi.png / ren.png / yui.png / daichi.png / mikoto.png
+例： yui.png を置く → 結衣AIだけ本物の画像になる
 
-■ 運営スタッフAI
-takagi.png / ota.png / nakao.png / shun.png
+■ ファイル名の一覧
+コア部門
+  ceo / secretary / strategy / analyst / sales / writer / marketer
+  designer / researcher / programmer / qa / security / cloud
 
-※ 推奨サイズ：正方形 256×256px 以上
+DayDream Plus メンバーAI
+  yuma / aoi / ren / yui / daichi / mikoto
+
+運営スタッフAI
+  takagi / ota / nakao / shun
+
+■ 推奨サイズ
+正方形 256×256px 以上（512×512px 推奨）
+
+■ SVGアバターを作り直したいとき
+tools/make-avatars.mjs の設定（髪型・髪色・服の色・メガネ・ヘッドセット）を
+書き換えて、次のコマンドで再生成できます。
+
+  node tools/make-avatars.mjs

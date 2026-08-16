@@ -19,19 +19,25 @@ export function Avatar({
   size?: number
   rounded?: string
 }) {
-  const [failed, setFailed] = useState(false)
+  // 0=指定された画像（png） 1=同じ名前のsvg 2=イニシャル表示
+  const [step, setStep] = useState(0)
   const hex = ACCENT[accent].hex
   const initial = name.replace(/AI/g, '').trim().charAt(0) || 'A'
 
-  if (src && !failed) {
+  // 用意したSVGアバターへの切り替え先
+  const svgSrc = src ? src.replace(/\.(png|jpg|jpeg|webp)$/i, '.svg') : ''
+  const current = step === 0 ? src : step === 1 && svgSrc !== src ? svgSrc : ''
+
+  if (current) {
     return (
       <img
-        src={src}
+        key={current}
+        src={current}
         alt={name}
         width={size}
         height={size}
         loading="lazy"
-        onError={() => setFailed(true)}
+        onError={() => setStep((n) => n + 1)}
         className={`${rounded} object-cover shrink-0`}
         style={{ width: size, height: size, boxShadow: `0 0 0 1px ${hex}44, 0 0 12px -2px ${hex}55` }}
       />
