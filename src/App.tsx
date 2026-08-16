@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import type { ScreenKey } from './components/Header'
 import { Dashboard } from './screens/Dashboard'
 import { Studio } from './screens/Studio'
+import { MeetingRoom } from './screens/MeetingRoom'
 import { Drawer } from './components/Drawer'
 import { EditDrawer } from './components/EditDrawer'
 import { Login } from './components/Login'
@@ -68,7 +69,9 @@ function Main() {
         />
 
         <main className="mx-auto max-w-[1800px] px-4 py-3">
-          {screen === 'management' ? <Dashboard onGoStudio={() => setScreen('studio')} /> : <Studio />}
+          {screen === 'management' && <Dashboard onGoStudio={() => setScreen('studio')} />}
+          {screen === 'studio' && <Studio />}
+          {screen === 'meeting' && <MeetingRoom />}
         </main>
 
         <footer className="mx-auto max-w-[1800px] px-4 py-5 flex flex-wrap items-center justify-between gap-2 text-[10px] text-slate-600">

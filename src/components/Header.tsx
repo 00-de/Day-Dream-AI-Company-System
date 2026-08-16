@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useData } from '../lib/data'
 import { useAuth } from '../lib/auth'
-import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit } from './Icons'
+import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit, IconMeeting } from './Icons'
 import { StatusDot } from './Ui'
 
 /* ============================================================
    上部ヘッダー（画面切替タブ）
    ============================================================ */
 
-export type ScreenKey = 'management' | 'studio'
+export type ScreenKey = 'management' | 'studio' | 'meeting'
 
 type Tab = {
   key: string
@@ -23,6 +23,7 @@ const TABS: Tab[] = [
   { key: 'management', label: '経営', screen: 'management', icon: IconChart },
   { key: 'staff', label: 'AI社員', screen: 'management', anchor: 'ai-staff', icon: IconUsers },
   { key: 'studio', label: '制作', screen: 'studio', icon: IconSparkle },
+  { key: 'meeting', label: '会議ルーム', screen: 'meeting', icon: IconMeeting },
   { key: 'youtube', label: 'YouTube', screen: 'studio', anchor: 'youtube', icon: IconYoutube },
 ]
 

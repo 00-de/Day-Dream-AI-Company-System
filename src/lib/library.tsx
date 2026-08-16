@@ -12,7 +12,7 @@ import {
 import { db, isFirebaseConfigured } from './firebase'
 import { useAuth } from './auth'
 import { removeFile } from './storage'
-import type { Task, MediaItem } from '../types'
+import type { Task, MediaItem, Meeting } from '../types'
 
 /* ============================================================
    タスクとファイルの管理
@@ -22,16 +22,20 @@ import type { Task, MediaItem } from '../types'
 
 const LOCAL_TASKS = 'ddai:tasks'
 const LOCAL_MEDIA = 'ddai:media'
+const LOCAL_MEETINGS = 'ddai:meetings'
 
 interface LibraryValue {
   tasks: Task[]
   media: MediaItem[]
+  meetings: Meeting[]
   loading: boolean
   addTask: (task: Omit<Task, 'id' | 'createdAt'>) => Promise<void>
   updateTask: (id: string, patch: Partial<Task>) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   addMedia: (item: Omit<MediaItem, 'id' | 'uploadedAt'>) => Promise<void>
   deleteMedia: (item: MediaItem) => Promise<void>
+  addMeeting: (meeting: Omit<Meeting, 'id' | 'createdAt'>) => Promise<Meeting>
+  deleteMeeting: (id: string) => Promise<void>
 }
 
 const Ctx = createContext<LibraryValue | null>(null)
@@ -68,6 +72,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
 
   const [tasks, setTasks] = useState<Task[]>([])
   const [media, setMedia] = useState<MediaItem[]>([])
+  const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
 
   // ── 読み込み ─────────────────────────────
@@ -86,14 +91,21 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
         (snap) => setMedia(snap.docs.map((d) => ({ ...(d.data() as MediaItem), id: d.id }))),
         () => undefined,
       )
+      const unsubMeetings = onSnapshot(
+        query(collection(db, 'meetings'), orderBy('createdAt', 'desc')),
+        (snap) => setMeetings(snap.docs.map((d) => ({ ...(d.data() as Meeting), id: d.id }))),
+        () => undefined,
+      )
       return () => {
         unsubTasks()
         unsubMedia()
+        unsubMeetings()
       }
     }
 
     setTasks(readLocal(LOCAL_TASKS, SAMPLE_TASKS))
     setMedia(readLocal(LOCAL_MEDIA, [] as MediaItem[]))
+    setMeetings(readLocal(LOCAL_MEETINGS, [] as Meeting[]))
     setLoading(false)
     return
   }, [online])
@@ -155,15 +167,42 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // ── 会議 ─────────────────────────────────
+  const addMeeting: LibraryValue['addMeeting'] = async (meeting) => {
+    const id = `mt${Date.now()}`
+    const next: Meeting = { ...meeting, id, createdAt: new Date().toISOString() }
+    if (online && db) {
+      await setDoc(doc(db, 'meetings', id), next)
+    } else {
+      const list = [next, ...meetings]
+      setMeetings(list)
+      writeLocal(LOCAL_MEETINGS, list)
+    }
+    return next
+  }
+
+  const deleteMeeting: LibraryValue['deleteMeeting'] = async (id) => {
+    if (online && db) {
+      await deleteDoc(doc(db, 'meetings', id))
+    } else {
+      const list = meetings.filter((m) => m.id !== id)
+      setMeetings(list)
+      writeLocal(LOCAL_MEETINGS, list)
+    }
+  }
+
   const value: LibraryValue = {
     tasks,
     media,
+    meetings,
     loading,
     addTask,
     updateTask,
     deleteTask,
     addMedia,
     deleteMedia,
+    addMeeting,
+    deleteMeeting,
   }
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

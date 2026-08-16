@@ -149,3 +149,10 @@ export const IconEdit = (p: P) => (
     <path d="M13.5 6.5l4 4" />
   </S>
 )
+
+export const IconMeeting = (p: P) => (
+  <S {...p}>
+    <path d="M20.5 12.5a7.5 7.5 0 01-10.6 6.8L4 21l1.7-5.6A7.5 7.5 0 1120.5 12.5z" />
+    <path d="M9 11h6M9 14h4" />
+  </S>
+)

@@ -216,3 +216,36 @@ export interface MediaItem {
   /** メモ・タグ */
   note?: string
 }
+
+/* ============================================================
+   会議ルーム
+   ============================================================ */
+
+/** 会議での1発言 */
+export interface MeetingTurn {
+  speaker: string
+  text: string
+}
+
+/** 会議から出たタスク案 */
+export interface MeetingTask {
+  title: string
+  assignee: string
+  priority: 'high' | 'normal' | 'low'
+}
+
+/** 会議の記録 */
+export interface Meeting {
+  id: string
+  topic: string
+  note?: string
+  /** 参加したAI社員のID */
+  participants: string[]
+  turns: MeetingTurn[]
+  summary: string
+  decisions: string[]
+  tasks: MeetingTask[]
+  /** 生成に使ったAI（Groq / Gemini / OpenAI / オフライン） */
+  provider: string
+  createdAt: string
+}

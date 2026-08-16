@@ -56,6 +56,12 @@ service cloud.firestore {
       allow write: if canWrite();
     }
 
+    // AI会議ルームの記録
+    match /meetings/{meetingId} {
+      allow read: if canRead();
+      allow write: if canWrite();
+    }
+
     // それ以外はすべて拒否
     match /{document=**} {
       allow read, write: if false;
