@@ -42,7 +42,7 @@ export function Header({
   noticeCount: number
 }) {
   const { data } = useData()
-  const { signOut, demo } = useAuth()
+  const { signOut, demo, account } = useAuth()
   const COMPANY = data.company
   const [activeKey, setActiveKey] = useState<string>('management')
   const [clock, setClock] = useState(() => new Date())
@@ -112,6 +112,7 @@ export function Header({
 
           <span className="w-px h-5 bg-white/10 mx-1" />
 
+          {account.canEdit && (
           <button
             type="button"
             onClick={onOpenEdit}
@@ -120,6 +121,7 @@ export function Header({
             <IconEdit className="w-4 h-4" />
             データ編集
           </button>
+          )}
 
           <button
             type="button"
@@ -152,11 +154,11 @@ export function Header({
             <p className="text-[10px] text-slate-500">{date}</p>
           </div>
           <div className="w-9 h-9 rounded-full grid place-content-center bg-gradient-to-br from-blue-500/30 to-cyan-400/20 ring-1 ring-cyan-400/40 text-[13px] font-bold text-cyan-200">
-            社
+            {account.name.charAt(0)}
           </div>
           <div className="leading-tight hidden md:block">
             <p className="text-[12px] text-slate-200">
-              社長：{COMPANY.presidentName}
+              {account.title}：{account.name}
               {demo && (
                 <span className="ml-1.5 text-[9px] px-1.5 py-[1px] rounded bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/30">
                   見るだけ
@@ -165,6 +167,7 @@ export function Header({
             </p>
             <p className="text-[10px] text-slate-500 flex items-center gap-1">
               <StatusDot /> {COMPANY.name}
+              {!account.canEdit && <span className="text-slate-600">・閲覧のみ</span>}
             </p>
           </div>
 

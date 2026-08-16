@@ -6,3 +6,6 @@ dist-ssr
 .env.local
 *.local
 .DS_Store
+
+# アカウント表を公開リポジトリに載せたくない場合は、次の行の # を外してください
+# ACCOUNTS.md

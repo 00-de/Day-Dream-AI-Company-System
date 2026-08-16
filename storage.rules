@@ -1,0 +1,53 @@
+rules_version = '2';
+
+// ============================================================
+// Firebase Storage セキュリティルール
+// Firebaseコンソール → Storage → ルール に貼り付けて「公開」してください
+//
+// ・アップロードできる人：社長・高木さん・太田さん
+// ・読み取り（表示）できる人：5人全員
+// ・1ファイル 50MB まで
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function email() {
+      return request.auth != null ? request.auth.token.email : '';
+    }
+
+    function canRead() {
+      return email() in [
+        'president@daydream-ai.jp',
+        'takagi@daydream-ai.jp',
+        'ota@daydream-ai.jp',
+        'nakao@daydream-ai.jp',
+        'shun@daydream-ai.jp'
+      ];
+    }
+
+    function canWrite() {
+      return email() in [
+        'president@daydream-ai.jp',
+        'takagi@daydream-ai.jp',
+        'ota@daydream-ai.jp'
+      ];
+    }
+
+    // 50MB 以内かどうか
+    function sizeOk() {
+      return request.resource.size < 50 * 1024 * 1024;
+    }
+
+    match /uploads/{kind}/{fileName} {
+      allow read: if canRead();
+      allow write: if canWrite() && sizeOk();
+      allow delete: if canWrite();
+    }
+
+    // それ以外はすべて拒否
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

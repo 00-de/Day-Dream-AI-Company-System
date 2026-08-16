@@ -1,109 +1,139 @@
-import { useEffect, useRef, useState } from 'react'
-import type { ChatMessage } from '../types'
-import { CHAT_GREETING, yen, countStaffStatus } from '../data/defaults'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ChatMessage, AiStaff } from '../types'
+import { CHAT_GREETING } from '../data/defaults'
 import { useData } from '../lib/data'
-import type { AppData } from '../types'
+import { askAi, checkAiStatus, chatPersonas, type AiMessage } from '../lib/ai'
+import { Avatar } from './Avatar'
 import { IconSend } from './Icons'
 
 /* ============================================================
    AI秘書チャット
-   まずはオフラインで動く応答エンジン。
-   将来 Groq / OpenAI に切り替える場合は askSecretary() を
-   fetch('/api/chat') に差し替えるだけで動きます。
+   /api/chat 経由で Groq / Gemini / OpenAI に接続します。
+   APIキーが未設定でも、簡易応答でそのまま使えます。
    ============================================================ */
 
 function nowTime() {
   return new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
 }
 
-/** キーワード応答エンジン */
-function askSecretary(text: string, data: AppData): string {
-  const t = text.toLowerCase()
-  const staff = countStaffStatus(data.staff)
-  const SCHEDULE = data.schedule
-  const FINANCE = data.finance
-  const LIVE = data.nextLive
-  const YT = data.youtube
-
-  if (/予定|スケジュール|今日/.test(text)) {
-    return '今日の予定です。\n' + SCHEDULE.map((s) => `・${s.time} ${s.title}`).join('\n')
-  }
-  if (/売上|利益|経営|数字/.test(text)) {
-    return `今月の売上は ${yen(FINANCE.monthSales)}（前月比 ${FINANCE.monthSalesDiff}）、利益は ${yen(
-      FINANCE.monthProfit,
-    )} です。目標達成率は ${FINANCE.goalRate}%、残り ${FINANCE.daysLeft} 日です。`
-  }
-  if (/ai社員|社員|稼働|メンバー/.test(text)) {
-    return `AI社員は全${staff.total}人。稼働中 ${staff.active}人 / 待機中 ${staff.standby}人 / メンテ中 ${staff.maintenance}人、稼働率は ${staff.rate}% です。`
-  }
-  if (/曲|楽曲|作詞|作曲|music/.test(t)) {
-    return '楽曲制作ですね。制作画面の「音楽制作」から、作詞・作曲・編曲・BGM生成が進められます。蓮AIと結衣AIに作業を割り当てましょうか？'
-  }
-  if (/mv|動画|映像|capcut/.test(t)) {
-    return 'MV制作はCapCut連携で進行できます。現在のMV制作プロジェクトは60%まで完了しています。'
-  }
-  if (/ライブ|会場|チケット/.test(text)) {
-    const rest = LIVE.checks.filter((c) => !c.done).map((c) => c.label)
-    return `次回ライブは ${LIVE.date}、${LIVE.venue} で「${LIVE.title}」です。準備進捗は ${LIVE.progress}%${
-      rest.length ? `、残りは「${rest.join('・')}」です。` : '、準備は完了しています。'
-    }`
-  }
-  if (/youtube|再生|登録者/.test(t)) {
-    return `YouTubeは登録者 ${YT.subscribers}人（今月 ${YT.subscribersDiff}）、総再生回数 ${YT.views}回、総視聴時間 ${YT.watchHours}時間です。`
-  }
-  if (/ありがとう|thanks/.test(t)) {
-    return 'どういたしまして。いつでも呼んでください、トシさん。'
-  }
-  if (/こんにちは|おはよう|やあ|hello/.test(t)) {
-    return `こんにちは、トシさん！本日AI社員${staff.active}人が稼働中です。今日はどこから始めましょうか？`
-  }
-  return `承知しました。「${text}」の件、担当のAI社員に共有してタスク登録しました。詳細が必要なら「売上」「予定」「AI社員」「ライブ」などと聞いてください。`
-}
-
 export function SecretaryChat({ compact = false }: { compact?: boolean }) {
   const { data } = useData()
+  const personas = useMemo(() => chatPersonas(data.staff), [data.staff])
+  const [personaId, setPersonaId] = useState<string>(personas[0]?.id ?? 'secretary')
+  const persona: AiStaff | undefined = personas.find((p) => p.id === personaId) ?? personas[0]
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: 'greet', from: 'ai', text: CHAT_GREETING, time: nowTime() },
   ])
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
+  const [provider, setProvider] = useState<string>('')
+  const [available, setAvailable] = useState<string[] | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
+
+  // 起動時に、どのAIが使える状態かを確認
+  useEffect(() => {
+    void checkAiStatus().then(setAvailable)
+  }, [])
 
   useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, thinking])
 
-  const send = () => {
+  const send = async () => {
     const text = input.trim()
     if (!text || thinking) return
-    setMessages((m) => [...m, { id: `u${Date.now()}`, from: 'me', text, time: nowTime() }])
+
+    const mine: ChatMessage = { id: `u${Date.now()}`, from: 'me', text, time: nowTime() }
+    const nextMessages = [...messages, mine]
+    setMessages(nextMessages)
     setInput('')
     setThinking(true)
-    window.setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        { id: `a${Date.now()}`, from: 'ai', text: askSecretary(text, data), time: nowTime() },
-      ])
-      setThinking(false)
-    }, 550)
+
+    // これまでのやり取りをAIに渡す（最初のあいさつは除く）
+    const history: AiMessage[] = nextMessages
+      .filter((m) => m.id !== 'greet')
+      .map((m) => ({ role: m.from === 'me' ? 'user' : 'assistant', content: m.text }))
+
+    const result = await askAi(
+      history,
+      data,
+      persona ? { name: persona.name, role: persona.role } : undefined,
+    )
+
+    setProvider(result.provider)
+    setMessages((m) => [...m, { id: `a${Date.now()}`, from: 'ai', text: result.reply, time: nowTime() }])
+    setThinking(false)
   }
 
-  const quick = ['今日の予定は？', '売上を教えて', 'AI社員の稼働状況', '新しいタスクを追加']
+  const clear = () => {
+    setMessages([{ id: 'greet', from: 'ai', text: CHAT_GREETING, time: nowTime() }])
+    setProvider('')
+  }
+
+  // よく使う質問（ボタンで入力できます）
+  const quickJa = ['今日の予定は？', '売上を教えて', 'AI社員の稼働状況', '新曲のアイデアが欲しい']
+
+  const statusText =
+    available === null
+      ? '接続を確認しています…'
+      : available.length > 0
+        ? `${available.join(' / ')} に接続`
+        : '簡易応答モード（APIキー未設定）'
 
   return (
     <div className="flex flex-col gap-2.5" style={{ minHeight: compact ? 190 : 260 }}>
+      {/* 相手を選ぶ */}
+      <div className="flex items-center gap-2">
+        <label className="sr-only" htmlFor="persona">
+          話す相手
+        </label>
+        <select
+          id="persona"
+          value={personaId}
+          onChange={(e) => setPersonaId(e.target.value)}
+          className="bg-night-950/70 rounded-lg px-2 py-1 text-[11px] text-slate-200 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none max-w-[150px]"
+        >
+          {personas.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+        <span
+          className={`text-[9px] px-1.5 py-[2px] rounded ring-1 ${
+            available && available.length > 0
+              ? 'text-emerald-300 ring-emerald-400/30 bg-emerald-400/10'
+              : 'text-amber-300 ring-amber-400/25 bg-amber-400/10'
+          }`}
+        >
+          {provider || statusText}
+        </span>
+        <button
+          type="button"
+          onClick={clear}
+          className="ml-auto text-[10px] text-slate-500 hover:text-slate-200 transition"
+        >
+          会話をリセット
+        </button>
+      </div>
+
+      {/* 会話 */}
       <div
         ref={listRef}
         className="flex-1 overflow-y-auto space-y-2 pr-1"
-        style={{ maxHeight: compact ? 190 : 260 }}
+        style={{ maxHeight: compact ? 190 : 320 }}
       >
         {messages.map((m) => (
           <div key={m.id} className={`flex gap-2 ${m.from === 'me' ? 'justify-end' : ''}`}>
-            {m.from === 'ai' && (
-              <div className="w-7 h-7 shrink-0 rounded-lg grid place-content-center bg-cyan-400/15 ring-1 ring-cyan-400/30 text-[13px]">
-                🤖
-              </div>
-            )}
+            {m.from === 'ai' &&
+              (persona ? (
+                <Avatar name={persona.name} src={persona.avatar} accent={persona.accent} size={28} rounded="rounded-lg" />
+              ) : (
+                <div className="w-7 h-7 shrink-0 rounded-lg grid place-content-center bg-cyan-400/15 ring-1 ring-cyan-400/30 text-[13px]">
+                  🤖
+                </div>
+              ))}
             <div
               className={`max-w-[82%] rounded-xl px-3 py-2 text-[12px] leading-relaxed whitespace-pre-wrap ${
                 m.from === 'ai'
@@ -117,14 +147,17 @@ export function SecretaryChat({ compact = false }: { compact?: boolean }) {
         ))}
         {thinking && (
           <div className="flex gap-2 items-center text-[11px] text-slate-400">
-            <div className="w-7 h-7 rounded-lg grid place-content-center bg-cyan-400/15 ring-1 ring-cyan-400/30">🤖</div>
-            AI秘書が入力しています…
+            <div className="w-7 h-7 rounded-lg grid place-content-center bg-cyan-400/15 ring-1 ring-cyan-400/30">
+              <span className="animate-pulseDot">●</span>
+            </div>
+            {persona?.name ?? 'AI秘書'}が考えています…
           </div>
         )}
       </div>
 
+      {/* よく使う質問 */}
       <div className="flex flex-wrap gap-1.5">
-        {quick.map((q) => (
+        {quickJa.map((q) => (
           <button
             key={q}
             type="button"
@@ -136,20 +169,23 @@ export function SecretaryChat({ compact = false }: { compact?: boolean }) {
         ))}
       </div>
 
+      {/* 入力 */}
       <div className="flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder="メッセージを入力してください..."
-          aria-label="AI秘書へのメッセージ"
-          className="flex-1 bg-night-950/70 rounded-lg px-3 py-2 text-[12px] text-slate-200 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none transition"
+          onKeyDown={(e) => e.key === 'Enter' && void send()}
+          disabled={thinking}
+          placeholder={`${persona?.name ?? 'AI秘書'}にメッセージを入力…`}
+          aria-label="AIへのメッセージ"
+          className="flex-1 bg-night-950/70 rounded-lg px-3 py-2 text-[12px] text-slate-200 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none transition disabled:opacity-50"
         />
         <button
           type="button"
-          onClick={send}
+          onClick={() => void send()}
+          disabled={thinking || !input.trim()}
           aria-label="送信"
-          className="w-10 rounded-lg grid place-content-center bg-cyan-500/25 ring-1 ring-cyan-400/40 text-cyan-200 hover:bg-cyan-500/40 transition"
+          className="w-10 rounded-lg grid place-content-center bg-cyan-500/25 ring-1 ring-cyan-400/40 text-cyan-200 hover:bg-cyan-500/40 disabled:opacity-40 transition"
         >
           <IconSend className="w-4 h-4" />
         </button>

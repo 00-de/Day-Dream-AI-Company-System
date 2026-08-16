@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Header } from './components/Header'
 import type { ScreenKey } from './components/Header'
 import { Dashboard } from './screens/Dashboard'
@@ -9,7 +9,9 @@ import { Login } from './components/Login'
 import { StateBadge } from './components/Ui'
 import { AuthProvider, useAuth } from './lib/auth'
 import { DataProvider, useData } from './lib/data'
+import { LibraryProvider } from './lib/library'
 import { isFirebaseConfigured } from './lib/firebase'
+import { checkAiStatus } from './lib/ai'
 
 /* ============================================================
    DayDream AI Company System v1.1.0
@@ -32,11 +34,17 @@ function LoadingScreen({ message }: { message: string }) {
 /** ログイン後の本体 */
 function Main() {
   const { data, loading, source } = useData()
-  const { user, demo } = useAuth()
+  const { user, demo, account } = useAuth()
   const [screen, setScreen] = useState<ScreenKey>('management')
   const [notices, setNotices] = useState(false)
   const [settings, setSettings] = useState(false)
   const [edit, setEdit] = useState(false)
+  const [aiProviders, setAiProviders] = useState<string[] | null>(null)
+
+  // 設定を開いたときに、AIの接続状態を確認する
+  useEffect(() => {
+    if (settings) void checkAiStatus().then(setAiProviders)
+  }, [settings])
 
   if (loading) return <LoadingScreen message="データを読み込んでいます…" />
 
@@ -97,9 +105,24 @@ function Main() {
             <h3 className="text-[12px] font-bold text-slate-100 mb-2">アカウント</h3>
             <dl className="space-y-1 text-[11px]">
               <div className="flex justify-between gap-3">
-                <dt className="text-slate-400">ログイン状態</dt>
+                <dt className="text-slate-400">ログイン中</dt>
+                <dd className="text-slate-200 text-right">
+                  {account.title}：{account.name}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-400">状態</dt>
                 <dd className="text-slate-200 text-right">
                   {user ? 'ログイン中' : demo ? '見るだけモード' : '未ログイン'}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-400">権限</dt>
+                <dd>
+                  <StateBadge
+                    text={account.canEdit ? 'データ編集できます' : '閲覧のみ'}
+                    tone={account.canEdit ? 'good' : 'warn'}
+                  />
                 </dd>
               </div>
               {user?.email && (
@@ -122,6 +145,38 @@ function Main() {
                 </dd>
               </div>
             </dl>
+          </section>
+
+          <section className="panel p-3">
+            <h3 className="text-[12px] font-bold text-slate-100 mb-2">AI接続</h3>
+            <dl className="space-y-1 text-[11px]">
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-400">状態</dt>
+                <dd>
+                  {aiProviders === null ? (
+                    <span className="text-slate-500">確認中…</span>
+                  ) : (
+                    <StateBadge
+                      text={aiProviders.length > 0 ? '接続できます' : '簡易応答モード'}
+                      tone={aiProviders.length > 0 ? 'good' : 'warn'}
+                    />
+                  )}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt className="text-slate-400">使えるAI</dt>
+                <dd className="text-slate-200 text-right">
+                  {aiProviders === null ? '—' : aiProviders.length > 0 ? aiProviders.join(' / ') : 'なし'}
+                </dd>
+              </div>
+            </dl>
+            {aiProviders !== null && aiProviders.length === 0 && (
+              <p className="mt-2 text-[10px] text-amber-300/90 leading-relaxed">
+                Vercelの Settings → Environment Variables に GROQ_API_KEY（または GEMINI_API_KEY /
+                OPENAI_API_KEY）を登録し、再デプロイするとAIに接続されます。
+                キー名に VITE_ は付けないでください。
+              </p>
+            )}
           </section>
 
           <section className="panel p-3">
@@ -163,8 +218,7 @@ function Main() {
           </section>
 
           <p className="text-[11px] text-slate-500 leading-relaxed">
-            AI連携キー（OpenAI / Groq / Gemini）はフェーズ3で追加します。
-            APIキーはVercelのサーバー側で管理し、ブラウザには出しません。
+            APIキーはVercelのサーバー側（/api/chat）だけが読み込みます。ブラウザには出ません。
           </p>
         </div>
       </Drawer>
@@ -179,7 +233,9 @@ function Gate() {
   if (!signedIn) return <Login />
   return (
     <DataProvider>
-      <Main />
+      <LibraryProvider>
+        <Main />
+      </LibraryProvider>
     </DataProvider>
   )
 }

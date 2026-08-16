@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { GALLERY } from '../data/defaults'
 import { useData } from '../lib/data'
+import { useLibrary } from '../lib/library'
+import { MediaUpload } from '../components/MediaUpload'
+import { formatSize } from '../lib/storage'
 import { Panel, MoreLink, ProgressBar, ACCENT } from '../components/Ui'
 import { Donut, Sparkline, Waveform } from '../components/Charts'
 import {
@@ -21,6 +23,13 @@ import {
 /* ============================================================
    画面② クリエイティブスタジオ
    ============================================================ */
+
+const KIND_SUMMARY = [
+  { kind: 'audio' as const, icon: '🎵', label: '楽曲' },
+  { kind: 'image' as const, icon: '🖼️', label: '画像' },
+  { kind: 'video' as const, icon: '🎬', label: '動画' },
+  { kind: 'document' as const, icon: '📄', label: '書類' },
+]
 
 const SECTIONS = [
   { id: 'music', label: '音楽制作', icon: IconMusic, accent: 'purple' as const },
@@ -58,6 +67,10 @@ function Thumb({ src, label, ratio = 'aspect-video' }: { src?: string; label?: s
 
 export function Studio() {
   const { data } = useData()
+  const { media } = useLibrary()
+  const images = media.filter((m) => m.kind === 'image')
+  const videos = media.filter((m) => m.kind === 'video')
+  const usedBytes = media.reduce((sum, m) => sum + (m.size || 0), 0)
   const {
     nowPlaying: NOW_PLAYING,
     songs: SONGS,
@@ -66,8 +79,6 @@ export function Studio() {
     videos: VIDEOS,
     nextLive: NEXT_LIVE,
     lives: LIVES,
-    files: FILES,
-    storage: STORAGE,
   } = data
 
   const [playing, setPlaying] = useState(false)
@@ -175,7 +186,10 @@ export function Studio() {
             </span>
           </div>
 
-          <p className="mt-4 mb-1.5 text-[11px] text-slate-400">最近の楽曲</p>
+          <p className="mt-4 mb-1.5 text-[11px] text-slate-400">楽曲ファイル</p>
+          <MediaUpload accept="audio/*" kinds={['audio']} columns={5} emptyText="音源をアップロードできます" />
+
+          <p className="mt-3 mb-1.5 text-[11px] text-slate-400">楽曲リスト</p>
           <ul className="space-y-1.5">
             {SONGS.map((song) => (
               <li key={song.id} className="flex items-center gap-2 text-[11px] panel px-2.5 py-1.5">
@@ -212,7 +226,7 @@ export function Studio() {
             ))}
           </div>
 
-          <Thumb src={GALLERY[0]} label="最新の生成画像" />
+          <Thumb src={images[0]?.url} label="最新の画像" />
 
           <div className="mt-3 flex gap-2">
             <input
@@ -229,28 +243,21 @@ export function Studio() {
             </button>
           </div>
 
-          <p className="mt-3 mb-1.5 text-[11px] text-slate-400">最近の生成画像</p>
-          <div className="grid grid-cols-5 gap-1.5">
-            {GALLERY.map((g, i) => (
-              <Thumb key={i} src={g} ratio="aspect-[3/4]" />
-            ))}
-          </div>
+          <p className="mt-3 mb-1.5 text-[11px] text-slate-400">
+            画像ライブラリ（{images.length}枚）
+          </p>
+          <MediaUpload accept="image/*" kinds={['image']} columns={5} emptyText="画像をアップロードしてください" />
         </Panel>
 
         {/* ── MV制作 ─────────────────────────────── */}
         <Panel title="MV制作（CapCut連携）" className="scroll-mt-20" action={<MoreLink />}>
           <div id="mv" />
           <div className="relative">
-            <Thumb src="/gallery/mv.png" label="MVプレビュー" />
-            <button
-              type="button"
-              className="absolute inset-0 grid place-content-center"
-              aria-label="MVを再生"
-            >
-              <span className="w-12 h-12 rounded-full grid place-content-center bg-black/50 ring-1 ring-white/30 text-white backdrop-blur-sm hover:bg-black/70 transition">
-                <IconPlay className="w-5 h-5" />
-              </span>
-            </button>
+            {videos[0] ? (
+              <video src={videos[0].url} controls className="w-full aspect-video rounded-lg ring-1 ring-white/10 bg-black" />
+            ) : (
+              <Thumb label="MVプレビュー" />
+            )}
           </div>
           <div className="mt-2 flex items-center gap-2 text-[10px] text-slate-400">
             <span className="font-num">01:20</span>
@@ -260,12 +267,8 @@ export function Studio() {
             <span className="font-num">04:19</span>
           </div>
 
-          <p className="mt-3 mb-1.5 text-[11px] text-slate-400">最近のMV</p>
-          <div className="grid grid-cols-4 gap-1.5">
-            {[0, 1, 2, 3].map((i) => (
-              <Thumb key={i} src={`/gallery/mv${i + 1}.png`} />
-            ))}
-          </div>
+          <p className="mt-3 mb-1.5 text-[11px] text-slate-400">動画ライブラリ（{videos.length}本）</p>
+          <MediaUpload accept="video/*" kinds={['video']} columns={4} emptyText="動画をアップロードしてください" />
 
           <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
             {['字幕生成', 'エフェクト', '音声同期'].map((x) => (
@@ -347,7 +350,7 @@ export function Studio() {
             {VIDEOS.map((v) => (
               <li key={v.id} className="flex items-center gap-2 panel px-2 py-1.5">
                 <div className="w-14 shrink-0">
-                  <Thumb src={`/gallery/${v.id}.png`} />
+                  <Thumb />
                 </div>
                 <span className="text-[11px] text-slate-200 truncate flex-1">{v.title}</span>
                 <span className="text-[10px] font-num text-slate-500 shrink-0">{v.views}</span>
@@ -359,26 +362,27 @@ export function Studio() {
         {/* ── ファイル管理 ───────────────────────── */}
         <Panel title="ファイル管理" className="scroll-mt-20" action={<MoreLink label="バックアップ設定" />}>
           <div id="files" />
-          <div className="grid grid-cols-5 gap-2">
-            {FILES.map((f) => (
-              <button key={f.label} type="button" className="panel panel-hover py-3 text-center">
-                <div className="text-[18px]">{f.icon}</div>
-                <p className="text-[10px] text-slate-300 mt-1 truncate">{f.label}</p>
-                <p className="font-num text-[10px] text-slate-500">{f.count} ファイル</p>
-              </button>
+          <div className="grid grid-cols-4 gap-2 mb-3">
+            {KIND_SUMMARY.map((k) => (
+              <div key={k.kind} className="panel py-2.5 text-center">
+                <div className="text-[16px]">{k.icon}</div>
+                <p className="text-[10px] text-slate-300 mt-1">{k.label}</p>
+                <p className="font-num text-[10px] text-slate-500">
+                  {media.filter((m) => m.kind === k.kind).length} 件
+                </p>
+              </div>
             ))}
           </div>
 
-          <div className="mt-3">
+          <div className="mb-3">
             <div className="flex justify-between text-[10px] text-slate-400 mb-1">
               <span>ストレージ使用量</span>
-              <span className="font-num">
-                {STORAGE.used} {STORAGE.unit} / {STORAGE.total} {STORAGE.unit}（
-                {Math.round((STORAGE.used / STORAGE.total) * 100)}%）
-              </span>
+              <span className="font-num">{formatSize(usedBytes)} / 5 GB（無料枠）</span>
             </div>
-            <ProgressBar value={(STORAGE.used / STORAGE.total) * 100} accent="gradient" />
+            <ProgressBar value={Math.min(100, (usedBytes / (5 * 1024 * 1024 * 1024)) * 100)} accent="gradient" />
           </div>
+
+          <MediaUpload columns={6} emptyText="ここにファイルをアップロードできます" />
 
           <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
             {['Firebase Storage', 'Google Drive', 'ローカル保存', '自動バックアップ'].map((x) => (

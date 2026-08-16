@@ -6,12 +6,23 @@ import { Panel, MoreLink, ProgressBar, StateBadge, ACCENT, StatusDot } from '../
 import { Donut, Sparkline } from '../components/Charts'
 import { StaffCard } from '../components/StaffCard'
 import { SecretaryChat } from '../components/SecretaryChat'
+import { TaskPanel } from '../components/TaskPanel'
+import { useLibrary } from '../lib/library'
+import { formatSize } from '../lib/storage'
 import { Avatar } from '../components/Avatar'
 import { IconMusic, IconImage, IconFilm, IconMic, IconYoutube, IconCloud, IconCheck } from '../components/Icons'
 
 /* ============================================================
    画面① 経営・AI社員ダッシュボード
    ============================================================ */
+
+/** ファイル管理の内訳 */
+const UPLOAD_KINDS = [
+  { kind: 'audio' as const, icon: '🎵', label: '楽曲' },
+  { kind: 'image' as const, icon: '🖼️', label: '画像' },
+  { kind: 'video' as const, icon: '🎬', label: '動画' },
+  { kind: 'document' as const, icon: '📄', label: '書類' },
+]
 
 const TOOLS = [
   { label: '音楽制作', icon: IconMusic, accent: 'purple' as const },
@@ -23,6 +34,7 @@ const TOOLS = [
 
 export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
   const { data } = useData()
+  const { media } = useLibrary()
   const [group, setGroup] = useState<'all' | 'core' | 'member' | 'staff'>('all')
   const [selected, setSelected] = useState<AiStaff | null>(null)
 
@@ -35,8 +47,6 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
     notices: NOTICES,
     projects: PROJECTS,
     projectSummary: PROJECT_SUMMARY,
-    files: FILES,
-    storage: STORAGE,
     systemStatus: SYSTEM_STATUS,
     systemMetrics: SYSTEM_METRICS,
     network: NETWORK,
@@ -45,6 +55,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
   } = data
 
   const s = countStaffStatus(AI_STAFF)
+  const usedBytes = media.reduce((sum, m) => sum + (m.size || 0), 0)
 
   const list = useMemo(
     () => (group === 'all' ? AI_STAFF : AI_STAFF.filter((x) => x.group === group)),
@@ -183,25 +194,30 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
         </Panel>
 
         {/* 下段 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <Panel title="ファイル管理" action={<MoreLink onClick={onGoStudio} />}>
-            <div className="grid grid-cols-5 gap-2">
-              {FILES.map((f) => (
-                <div key={f.label} className="text-center panel-hover panel py-2.5 px-1">
-                  <div className="text-[16px]">{f.icon}</div>
-                  <p className="text-[10px] text-slate-300 mt-1 truncate">{f.label}</p>
-                  <p className="font-num text-[10px] text-slate-500">{f.count}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-3">
+          <TaskPanel />
+
+          <Panel title="ファイル管理" action={<MoreLink label="スタジオで開く" onClick={onGoStudio} />}>
+            <div className="grid grid-cols-4 gap-2">
+              {UPLOAD_KINDS.map((k) => (
+                <div key={k.kind} className="text-center panel-hover panel py-2.5 px-1">
+                  <div className="text-[16px]">{k.icon}</div>
+                  <p className="text-[10px] text-slate-300 mt-1 truncate">{k.label}</p>
+                  <p className="font-num text-[10px] text-slate-500">
+                    {media.filter((m) => m.kind === k.kind).length}
+                  </p>
                 </div>
               ))}
             </div>
             <div className="mt-3">
               <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                <span>ストレージ使用量</span>
+                <span>アップロード済み</span>
                 <span className="font-num">
-                  {STORAGE.used} {STORAGE.unit} / {STORAGE.total} {STORAGE.unit}
+                  {media.length} ファイル・{formatSize(usedBytes)}
                 </span>
               </div>
-              <ProgressBar value={(STORAGE.used / STORAGE.total) * 100} accent="gradient" />
+              <ProgressBar value={Math.min(100, (usedBytes / (5 * 1024 * 1024 * 1024)) * 100)} accent="gradient" />
+              <p className="text-[9px] text-slate-600 mt-1">Firebase Storage 無料枠 5GB のうちの使用量</p>
             </div>
           </Panel>
 

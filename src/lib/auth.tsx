@@ -9,6 +9,7 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from './firebase'
+import { findAccount, GUEST_ACCOUNT, ACCOUNTS, type Account } from './accounts'
 
 /* ============================================================
    ログイン状態の管理
@@ -20,6 +21,8 @@ type Mode = 'firebase' | 'demo'
 
 interface AuthValue {
   user: User | null
+  /** ログイン中の人の情報（名前・肩書き・権限） */
+  account: Account
   mode: Mode
   ready: boolean
   /** ログイン済み（デモモードを含む） */
@@ -95,8 +98,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (auth) await fbSignOut(auth)
   }
 
+  // 見るだけモードは社長として表示（保存は端末内のみ）
+  const account: Account = user
+    ? (findAccount(user.email) ?? { ...GUEST_ACCOUNT, email: user.email ?? '' })
+    : demo
+      ? ACCOUNTS[0]
+      : GUEST_ACCOUNT
+
   const value: AuthValue = {
     user,
+    account,
     mode: isFirebaseConfigured ? 'firebase' : 'demo',
     ready,
     signedIn: Boolean(user) || demo,

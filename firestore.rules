@@ -1,33 +1,59 @@
 rules_version = '2';
 
 // ============================================================
-// Firestore セキュリティルール
+// Firestore セキュリティルール（5アカウント対応版）
 // Firebaseコンソール → Firestore Database → ルール に
 // この内容をそのまま貼り付けて「公開」してください。
 //
-// ・ログインした人だけが読み書きできます
-// ・社長のUIDだけに限定したい場合は、下の ALLOWED_UID を書き換えて
-//   isPresident() を使う行のコメントを入れ替えてください
+// ・書き込みできる人：社長・高木さん・太田さん
+// ・読み取りだけの人：中尾さん・シュンさん
+// ・一覧に無いアカウントは、読み書きどちらもできません
 // ============================================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
+    // ログインしている本人のメールアドレス
+    function email() {
+      return request.auth != null ? request.auth.token.email : '';
     }
 
-    // 社長だけに限定する場合はここにUIDを入れます
-    // （FirebaseコンソールのAuthentication → ユーザー でUIDを確認できます）
-    function isPresident() {
-      return isSignedIn() && request.auth.uid == 'ここに社長のUID';
+    // 読み取りできる人（5人全員）
+    function canRead() {
+      return email() in [
+        'president@daydream-ai.jp',
+        'takagi@daydream-ai.jp',
+        'ota@daydream-ai.jp',
+        'nakao@daydream-ai.jp',
+        'shun@daydream-ai.jp'
+      ];
+    }
+
+    // 書き込みできる人（社長・高木さん・太田さん）
+    function canWrite() {
+      return email() in [
+        'president@daydream-ai.jp',
+        'takagi@daydream-ai.jp',
+        'ota@daydream-ai.jp'
+      ];
     }
 
     // ダッシュボードのデータ
     match /system/{docId} {
-      allow read, write: if isSignedIn();
-      // 社長だけに限定する場合は上の行を消して、次の行を使います
-      // allow read, write: if isPresident();
+      allow read: if canRead();
+      allow write: if canWrite();
+    }
+
+    // タスク管理（フェーズ4）
+    match /tasks/{taskId} {
+      allow read: if canRead();
+      allow write: if canWrite();
+    }
+
+    // アップロードしたファイルの情報（フェーズ4）
+    match /media/{mediaId} {
+      allow read: if canRead();
+      allow write: if canWrite();
     }
 
     // それ以外はすべて拒否

@@ -176,3 +176,43 @@ export interface AppData {
   /** 最終更新（表示用のISO文字列） */
   updatedAt?: string
 }
+
+/* ============================================================
+   フェーズ4：タスク管理とファイル管理
+   ============================================================ */
+
+/** タスクの状態 */
+export type TaskStatus = 'todo' | 'doing' | 'done'
+
+/** タスク */
+export interface Task {
+  id: string
+  title: string
+  /** 担当するAI社員のID（未割り当ては空） */
+  assignee: string
+  status: TaskStatus
+  /** 期限（YYYY-MM-DD） */
+  due: string
+  /** 優先度 */
+  priority: 'high' | 'normal' | 'low'
+  createdAt: string
+}
+
+/** アップロードしたファイルの種類 */
+export type MediaKind = 'image' | 'audio' | 'video' | 'document'
+
+/** アップロードしたファイル */
+export interface MediaItem {
+  id: string
+  name: string
+  kind: MediaKind
+  /** 表示・再生用のURL */
+  url: string
+  /** Firebase Storage 内のパス（削除に使います） */
+  path: string
+  /** バイト数 */
+  size: number
+  uploadedAt: string
+  /** メモ・タグ */
+  note?: string
+}
