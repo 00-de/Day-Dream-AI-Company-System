@@ -10,9 +10,12 @@
 例： yui.png を置く → 結衣AIだけ本物の画像になる
 
 ■ ファイル名の一覧
-コア部門
-  ceo / secretary / strategy / analyst / sales / writer / marketer
-  designer / researcher / programmer / qa / security / cloud
+コア部門（カッコ内が表示される名前）
+  ceo（玲AI）        secretary（詩織AI）   strategy（宗一AI）
+  analyst（明日香AI） sales（陽太AI）       writer（文乃AI）
+  marketer（舞AI）    designer（彩AI）      researcher（知也AI）
+  programmer（拓斗AI） qa（澪AI）           security（剛AI）
+  cloud（空AI）
 
 DayDream Plus メンバーAI
   yuma / aoi / ren / yui / daichi / mikoto

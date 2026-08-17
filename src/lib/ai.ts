@@ -37,6 +37,7 @@ export function buildContext(data: AppData) {
     nextLive: data.nextLive,
     staffSummary: countStaffStatus(data.staff),
     staffList: data.staff.map((s) => ({ name: s.name, role: s.role })),
+    // 名前と役職の対応をAIが取り違えないように、そのまま渡します
   }
 }
 

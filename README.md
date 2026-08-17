@@ -1,4 +1,4 @@
-# DayDream AI Company System v1.7.0
+# DayDream AI Company System v1.8.0
 
 社長1人 ＋ AI社員23人による、次世代型AIエンターテインメント会社の統合ダッシュボードです。
 
@@ -196,6 +196,37 @@ Firebaseコンソールで **Storage を有効化 → `storage.rules` を公開 
 
 Firestore に **`meetings`** コレクションが追加されています。
 `firestore.rules` を更新版に貼り替えてください。
+
+---
+
+## AI社員23人の名前
+
+### コア部門（13人）
+
+| 名前 | 役職 |
+| --- | --- |
+| 玲AI（Rei） | AI社長／経営・意思決定 |
+| 詩織AI（Shiori） | AI秘書／スケジュール管理 |
+| 宗一AI（Soichi） | AI戦略／戦略立案・新規事業 |
+| 明日香AI（Asuka） | AI分析官／データ分析・レポート |
+| 陽太AI（Yota） | AI営業／営業支援・提案 |
+| 文乃AI（Fumino） | AIライター／文章作成・コピー |
+| 舞AI（Mai） | AIマーケター／マーケティング戦略 |
+| 彩AI（Aya） | AIデザイナー／デザイン制作 |
+| 知也AI（Tomoya） | AIリサーチャー／情報収集・調査 |
+| 拓斗AI（Takuto） | AIプログラマー／システム開発 |
+| 澪AI（Mio） | AI品質管理／品質チェック・テスト |
+| 剛AI（Tsuyoshi） | AIセキュリティ／セキュリティ管理 |
+| 空AI（Sora） | AIクラウド／クラウド・インフラ管理 |
+
+### DayDream Plus メンバーAI（6人）
+悠真AI・葵AI・蓮AI・結衣AI・大地AI・美琴AI
+
+### 運営スタッフAI（4人）
+高木AI・太田AI・中尾AI・シュンAI
+
+> 名前は `src/data/defaults.ts` で変更できます。
+> アプリ内の「データ編集 → AI社員」からは役職とタスク数を変更できます。
 
 ---
 
