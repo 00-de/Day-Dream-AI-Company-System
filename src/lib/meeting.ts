@@ -1,4 +1,4 @@
-import type { AppData, AiStaff, MeetingTurn, MeetingTask } from '../types'
+import type { AppData, AiStaff, MeetingTurn, MeetingTask, HumanOpinion } from '../types'
 import { buildContext } from './ai'
 
 /* ============================================================
@@ -24,6 +24,7 @@ export async function holdMeeting(
   participants: AiStaff[],
   data: AppData,
   rounds = 2,
+  humanOpinions: HumanOpinion[] = [],
 ): Promise<MeetingResult> {
   try {
     const res = await fetch('/api/meeting', {
@@ -34,6 +35,7 @@ export async function holdMeeting(
         note,
         rounds,
         participants: participants.map((p) => ({ name: p.name, role: p.role })),
+        humanOpinions: humanOpinions.map((h) => ({ id: h.id, name: h.name, title: h.title, text: h.text })),
         context: buildContext(data),
       }),
     })
@@ -45,11 +47,11 @@ export async function holdMeeting(
 
     const err = (await res.json().catch(() => null)) as { error?: string } | null
     return {
-      ...offlineMeeting(topic, note, participants, data, rounds),
+      ...offlineMeeting(topic, note, participants, data, rounds, humanOpinions),
       error: err?.error ?? undefined,
     }
   } catch {
-    return offlineMeeting(topic, note, participants, data, rounds)
+    return offlineMeeting(topic, note, participants, data, rounds, humanOpinions)
   }
 }
 
@@ -83,8 +85,14 @@ export function offlineMeeting(
   participants: AiStaff[],
   data: AppData,
   rounds: number,
+  humanOpinions: HumanOpinion[] = [],
 ): MeetingResult {
   const turns: MeetingTurn[] = []
+
+  // 人間の意見に触れる発言を、最初のAI社員に持たせます
+  const opinionRef = humanOpinions.length
+    ? `${humanOpinions[0].name}のご意見（${humanOpinions[0].text.slice(0, 40)}…）を踏まえます。`
+    : ''
 
   for (let r = 0; r < Math.max(1, rounds); r++) {
     participants.forEach((p, i) => {
@@ -95,7 +103,7 @@ export function offlineMeeting(
           text:
             `${a.open}「${topic}」について、${p.role}としては` +
             (i === 0
-              ? 'まず現状の整理から始めたいです。'
+              ? `まず現状の整理から始めたいです。${opinionRef}`
               : `${participants[i - 1].name}さんの意見に沿いつつ、担当範囲で必要な準備を洗い出します。`) +
             (note ? `${note}という点も踏まえます。` : ''),
         })
@@ -108,11 +116,20 @@ export function offlineMeeting(
     })
   }
 
-  const tasks: MeetingTask[] = participants.slice(0, 3).map((p, i) => ({
-    title: `「${topic}」について ${p.role} の準備を進める`,
-    assignee: p.name,
-    priority: i === 0 ? 'high' : 'normal',
-  }))
+  const tasks: MeetingTask[] = (humanOpinions
+    .slice(0, 2)
+    .map((h) => ({
+      title: `${h.name}のご意見「${h.text.slice(0, 30)}」への対応を検討する`,
+      assignee: participants[0]?.name ?? '',
+      priority: 'high',
+    })) as MeetingTask[])
+    .concat(
+      participants.slice(0, 3).map((p, i) => ({
+        title: `「${topic}」について ${p.role} の準備を進める`,
+        assignee: p.name,
+        priority: (i === 0 ? 'high' : 'normal') as 'high' | 'normal' | 'low',
+      })),
+    )
 
   return {
     turns,

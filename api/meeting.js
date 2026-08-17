@@ -9,11 +9,27 @@
 import { askProviders, availableProviders, buildContext, parseJson } from './_provider.js'
 
 /** 会議の指示文をつくる */
-function buildSystemPrompt(ctx, participants, rounds) {
+function buildSystemPrompt(ctx, participants, rounds, humanOpinions) {
   const userName = ctx?.company?.presidentName || 'トシさん'
   const members = participants
     .map((p, i) => `${i + 1}. ${p.name}（${p.role}）`)
     .join('\n')
+
+  const hasHuman = Array.isArray(humanOpinions) && humanOpinions.length > 0
+  const humanBlock = hasHuman
+    ? [
+        '',
+        '【会議前に集めた、人間スタッフの意見】',
+        ...humanOpinions.map((h) => `・${h.name}（${h.title}）：${h.text}`),
+        '',
+        '【人間スタッフの意見の扱い方】',
+        '・この意見は、実際に現場で動いている人が書いたものです。AI社員より現実の状況に詳しいと考えてください。',
+        '・AI社員は必ず、誰かの意見に名前を挙げて言及します（「高木さんが言われた〜について」のように）。',
+        '・賛同するだけでなく、実行するために足りない点や、具体化する方法を補います。',
+        '・人間スタッフの意見と違う考えを述べる場合は、頭から否定せず、理由と代案を添えます。',
+        '・現場の事情（会場・機材・人手・予算）に関わる指摘は、特に重く受け止めます。',
+      ].join('\n')
+    : ''
 
   return [
     'あなたは、DayDream AI株式会社の会議を進行する司会AIです。',
@@ -29,9 +45,11 @@ function buildSystemPrompt(ctx, participants, rounds) {
     '・数字は下の「現在の状況」にあるものだけを使います。無い数字は作らないこと。',
     '・最後に議事録・決定事項・次にやることをまとめます。',
     '・次にやることは、必ず参加者の誰かを担当に割り当てます。',
+    '・人間スタッフから出た意見のうち、対応が必要なものは「次にやること」に必ず入れます。',
     '',
     '【現在の状況】',
     buildContext(ctx) || '（データがまだ登録されていません）',
+    humanBlock,
     '',
     '【出力形式】',
     '次のJSONだけを返してください。前後に説明文やコードブロックは付けないこと。',
@@ -57,7 +75,7 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}
-    const { topic = '', participants = [], context = null, rounds = 2, note = '' } = body
+    const { topic = '', participants = [], context = null, rounds = 2, note = '', humanOpinions = [] } = body
 
     if (!topic.trim()) {
       return res.status(400).json({ error: '議題を入力してください' })
@@ -67,11 +85,19 @@ export default async function handler(req, res) {
     }
 
     const safeRounds = Math.min(3, Math.max(1, Number(rounds) || 2))
-    const system = buildSystemPrompt(context, participants.slice(0, 6), safeRounds)
+    const cleanOpinions = (Array.isArray(humanOpinions) ? humanOpinions : [])
+      .filter((h) => h && typeof h.text === 'string' && h.text.trim())
+      .slice(0, 5)
+      .map((h) => ({ name: h.name ?? '', title: h.title ?? '', text: h.text.trim().slice(0, 800) }))
+
+    const system = buildSystemPrompt(context, participants.slice(0, 6), safeRounds, cleanOpinions)
 
     const userMessage = [
       `議題：${topic.trim()}`,
       note.trim() ? `補足：${note.trim()}` : '',
+      cleanOpinions.length
+        ? `※ 人間スタッフから${cleanOpinions.length}件の意見が出ています。必ず踏まえて議論してください。`
+        : '',
       'この議題で会議を行い、指定のJSON形式で返してください。',
     ]
       .filter(Boolean)

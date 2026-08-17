@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { AiStaff, Meeting, MeetingTurn } from '../types'
+import type { AiStaff, Meeting, MeetingTurn, HumanOpinion } from '../types'
 import { useData } from '../lib/data'
 import { useLibrary } from '../lib/library'
 import { useAuth } from '../lib/auth'
 import { holdMeeting } from '../lib/meeting'
 import { Panel, ACCENT, StateBadge, MoreLink } from '../components/Ui'
 import { Avatar } from '../components/Avatar'
+import { HUMANS } from '../data/humans'
 import { IconCheck, IconUsers, IconSparkle } from '../components/Icons'
 
 /* ============================================================
@@ -38,6 +39,9 @@ export function MeetingRoom() {
   const [shownTurns, setShownTurns] = useState(0)
   const [error, setError] = useState('')
   const [addedTasks, setAddedTasks] = useState<string[]>([])
+  const [opinions, setOpinions] = useState<HumanOpinion[]>([])
+  const [whoId, setWhoId] = useState(HUMANS[0].id)
+  const [opinionText, setOpinionText] = useState('')
   const logRef = useRef<HTMLDivElement>(null)
 
   const staffOf = (id: string) => data.staff.find((s) => s.id === id)
@@ -64,6 +68,20 @@ export function MeetingRoom() {
   const toggleMember = (id: string) =>
     setSelected((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id].slice(0, 6)))
 
+  /** 人間メンバーの意見を追加する */
+  const addOpinion = () => {
+    const text = opinionText.trim()
+    const who = HUMANS.find((h) => h.id === whoId)
+    if (!text || !who) return
+    setOpinions((list) => [
+      ...list.filter((o) => o.id !== who.id),
+      { id: who.id, name: who.name, title: who.title, text },
+    ])
+    setOpinionText('')
+  }
+
+  const removeOpinion = (id: string) => setOpinions((list) => list.filter((o) => o.id !== id))
+
   const start = async () => {
     if (!topic.trim() || participants.length < 2 || running) return
     setError('')
@@ -72,7 +90,7 @@ export function MeetingRoom() {
     setShownTurns(0)
     setAddedTasks([])
 
-    const result = await holdMeeting(topic.trim(), note.trim(), participants, data, rounds)
+    const result = await holdMeeting(topic.trim(), note.trim(), participants, data, rounds, opinions)
 
     if (result.turns.length === 0) {
       setError('会議を開けませんでした。もう一度お試しください。')
@@ -88,6 +106,7 @@ export function MeetingRoom() {
       summary: result.summary,
       decisions: result.decisions,
       tasks: result.tasks,
+      humanOpinions: opinions,
       provider: result.provider,
     })
 
@@ -110,6 +129,7 @@ export function MeetingRoom() {
 
   const openHistory = (m: Meeting) => {
     setCurrent(m)
+    setOpinions(m.humanOpinions ?? [])
     setShownTurns(m.turns.length)
     setTopic(m.topic)
     setAddedTasks([])
@@ -178,6 +198,78 @@ export function MeetingRoom() {
         </Panel>
 
         <Panel
+          title={`人間メンバーの意見（${opinions.length}件）`}
+          action={<span className="text-[9px] text-slate-500">AIが必ず踏まえます</span>}
+        >
+          <p className="text-[10px] text-slate-500 mb-2 leading-relaxed">
+            現場を知っている人の意見を入れると、AI社員がそれに名前を挙げて応答し、
+            対応が必要なことは「次にやること」に入ります。
+          </p>
+
+          <select
+            value={whoId}
+            onChange={(e) => setWhoId(e.target.value)}
+            aria-label="意見を書く人"
+            className="w-full bg-night-950/70 rounded-lg px-2 py-1.5 text-[11px] text-slate-200 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none"
+          >
+            {HUMANS.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name}（{h.title}）
+              </option>
+            ))}
+          </select>
+
+          <textarea
+            value={opinionText}
+            onChange={(e) => setOpinionText(e.target.value)}
+            rows={3}
+            placeholder="この議題について思うこと、現場の事情、心配な点など"
+            aria-label="意見の内容"
+            className="mt-2 w-full bg-night-950/70 rounded-lg px-3 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none resize-none"
+          />
+
+          <button
+            type="button"
+            onClick={addOpinion}
+            disabled={!opinionText.trim()}
+            className="mt-2 w-full py-2 rounded-lg text-[11px] text-cyan-100 bg-cyan-500/25 ring-1 ring-cyan-400/40 hover:bg-cyan-500/40 disabled:opacity-40 transition"
+          >
+            意見を追加する
+          </button>
+
+          {opinions.length > 0 && (
+            <ul className="mt-2.5 space-y-1.5">
+              {opinions.map((o) => {
+                const h = HUMANS.find((x) => x.id === o.id)
+                return (
+                  <li key={o.id} className="panel p-2">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`text-[10px] font-bold ${h ? ACCENT[h.accent].text : 'text-slate-200'}`}
+                      >
+                        {o.name}
+                      </span>
+                      <span className="text-[9px] text-slate-600">{o.title}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeOpinion(o.id)}
+                        className="ml-auto text-slate-600 hover:text-red-300 text-[11px]"
+                        aria-label="この意見を削除"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
+                      {o.text}
+                    </p>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel
           title={`参加するAI社員（${participants.length}人）`}
           action={<span className="text-[9px] text-slate-500">最大6人</span>}
         >
@@ -243,6 +335,21 @@ export function MeetingRoom() {
         >
           {/* 参加者の席 */}
           <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b border-white/10">
+            {(current?.humanOpinions ?? opinions).map((o) => {
+              const h = HUMANS.find((x) => x.id === o.id)
+              const accent = h?.accent ?? 'cyan'
+              return (
+                <div
+                  key={`seat-${o.id}`}
+                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg"
+                  style={{ boxShadow: `0 0 0 1px ${ACCENT[accent].hex}55` }}
+                  title="人間メンバー"
+                >
+                  <span className="text-[11px]">🧑</span>
+                  <span className={`text-[10px] ${ACCENT[accent].text}`}>{o.name}</span>
+                </div>
+              )
+            })}
             {participants.map((p) => {
               const speaking =
                 current && shownTurns > 0 && current.turns[shownTurns - 1]?.speaker.includes(p.name)
@@ -281,6 +388,45 @@ export function MeetingRoom() {
                 <p className="text-[10px] text-slate-500 mt-1">10〜20秒ほどかかります</p>
               </div>
             )}
+
+            {/* 人間メンバーの意見（会議の最初に置きます） */}
+            {current &&
+              (current.humanOpinions ?? []).map((o) => {
+                const h = HUMANS.find((x) => x.id === o.id)
+                const accent = h?.accent ?? 'cyan'
+                return (
+                  <div key={`op-${o.id}`} className="flex gap-2.5 animate-floatUp">
+                    <div
+                      className="w-[34px] h-[34px] shrink-0 rounded-xl grid place-content-center text-[13px] font-bold"
+                      style={{
+                        color: ACCENT[accent].hex,
+                        background: `${ACCENT[accent].hex}22`,
+                        boxShadow: `0 0 0 1px ${ACCENT[accent].hex}55`,
+                      }}
+                    >
+                      人
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="flex items-baseline gap-2">
+                        <span className={`text-[11px] font-bold ${ACCENT[accent].text}`}>{o.name}</span>
+                        <span className="text-[9px] text-slate-600">{o.title}</span>
+                        <span className="text-[8px] px-1.5 py-[1px] rounded bg-white/10 text-slate-400">
+                          人間の意見
+                        </span>
+                      </p>
+                      <div
+                        className="mt-1 rounded-xl px-3 py-2 text-[12px] text-slate-100 leading-relaxed whitespace-pre-wrap"
+                        style={{
+                          background: `${ACCENT[accent].hex}14`,
+                          boxShadow: `0 0 0 1px ${ACCENT[accent].hex}33`,
+                        }}
+                      >
+                        {o.text}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
 
             {visibleTurns.map((turn, i) => {
               const st = speakerOf(turn.speaker)
@@ -447,6 +593,11 @@ export function MeetingRoom() {
             <li className="flex gap-2">
               <IconSparkle className="w-3.5 h-3.5 text-cyan-300 shrink-0 mt-0.5" />
               「タスクに登録」で、そのままタスク管理に入ります
+            </li>
+            <li className="flex gap-2">
+              <IconSparkle className="w-3.5 h-3.5 text-cyan-300 shrink-0 mt-0.5" />
+              人間メンバー（小林さん・高木さん・太田さん・中尾さん・シュンさん）の意見を先に入れると、
+              AI社員がそれに名前を挙げて応答します
             </li>
           </ul>
           <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">

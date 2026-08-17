@@ -227,6 +227,10 @@ export interface MediaItem {
 export interface MeetingTurn {
   speaker: string
   text: string
+  /** 人間メンバーの発言なら true */
+  human?: boolean
+  /** 人間メンバーの肩書き */
+  title?: string
 }
 
 /** 会議から出たタスク案 */
@@ -247,7 +251,18 @@ export interface Meeting {
   summary: string
   decisions: string[]
   tasks: MeetingTask[]
+  /** 会議前に集めた人間メンバーの意見 */
+  humanOpinions?: HumanOpinion[]
   /** 生成に使ったAI（Groq / Gemini / OpenAI / オフライン） */
   provider: string
   createdAt: string
+}
+
+/** 人間メンバーの意見 */
+export interface HumanOpinion {
+  /** 人間メンバーのID */
+  id: string
+  name: string
+  title: string
+  text: string
 }
