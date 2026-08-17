@@ -4,6 +4,7 @@ import type { ScreenKey } from './components/Header'
 import { Dashboard } from './screens/Dashboard'
 import { Studio } from './screens/Studio'
 import { MeetingRoom } from './screens/MeetingRoom'
+import { StaffBoard } from './screens/StaffBoard'
 import { Drawer } from './components/Drawer'
 import { EditDrawer } from './components/EditDrawer'
 import { Login } from './components/Login'
@@ -73,6 +74,7 @@ function Main() {
         <main className="mx-auto max-w-[1800px] px-4 py-3">
           {screen === 'management' && <Dashboard onGoStudio={() => setScreen('studio')} />}
           {screen === 'studio' && <Studio />}
+          {screen === 'staff' && <StaffBoard />}
           {screen === 'meeting' && <MeetingRoom />}
         </main>
 

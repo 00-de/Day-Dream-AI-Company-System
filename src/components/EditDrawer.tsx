@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { AppData, AiStaff, StaffStatus } from '../types'
 import { useData } from '../lib/data'
 import { Drawer } from './Drawer'
-import { STAFF_GROUP_LABEL } from '../data/defaults'
+import { STAFF_GROUP_LABEL, DEFAULT_STAFF } from '../data/defaults'
 
 /* ============================================================
    データ編集
@@ -340,9 +340,26 @@ export function EditDrawer({ open, onClose }: { open: boolean; onClose: () => vo
       {/* ── AI社員 ─────────────────────────── */}
       {tab === 'staff' && (
         <div className="space-y-2">
-          <p className="text-[10px] text-slate-500 mb-2">
-            担当・稼働状況・タスク数を変更できます（全{draft.staff.length}人）
-          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <p className="text-[10px] text-slate-500 flex-1">
+              担当・稼働状況・タスク数を変更できます（全{draft.staff.length}人）
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                set(
+                  'staff',
+                  DEFAULT_STAFF.map((def) => {
+                    const old = draft.staff.find((s) => s.id === def.id)
+                    return old ? { ...def, status: old.status, tasks: old.tasks } : def
+                  }),
+                )
+              }
+              className="text-[10px] px-2 py-1 rounded-md ring-1 ring-white/10 text-slate-300 hover:ring-cyan-400/40 hover:text-cyan-200 transition shrink-0"
+            >
+              名前・役職を初期値に戻す
+            </button>
+          </div>
           {draft.staff.map((s) => (
             <div key={s.id} className="panel p-2.5 space-y-1.5">
               <div className="flex items-center gap-2">

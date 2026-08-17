@@ -9,7 +9,7 @@ import { ScalePicker } from './ScalePicker'
    上部ヘッダー（画面切替タブ）
    ============================================================ */
 
-export type ScreenKey = 'management' | 'studio' | 'meeting'
+export type ScreenKey = 'management' | 'studio' | 'meeting' | 'staff'
 
 type Tab = {
   key: string
@@ -22,7 +22,7 @@ type Tab = {
 
 const TABS: Tab[] = [
   { key: 'management', label: '経営', screen: 'management', icon: IconChart },
-  { key: 'staff', label: 'AI社員', screen: 'management', anchor: 'ai-staff', icon: IconUsers },
+  { key: 'staff', label: 'AI社員', screen: 'staff', icon: IconUsers },
   { key: 'studio', label: '制作', screen: 'studio', icon: IconSparkle },
   { key: 'meeting', label: '会議ルーム', screen: 'meeting', icon: IconMeeting },
   { key: 'youtube', label: 'YouTube', screen: 'studio', anchor: 'youtube', icon: IconYoutube },

@@ -173,6 +173,8 @@ export interface AppData {
   network: { speed: number; unit: string }
   backup: { last: string; next: string; state: string }
   staff: AiStaff[]
+  /** 社員名簿の版数。上がると保存済みデータの名前・役職が自動更新されます */
+  staffVersion?: number
   /** 最終更新（表示用のISO文字列） */
   updatedAt?: string
 }

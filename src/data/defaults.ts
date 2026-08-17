@@ -45,7 +45,7 @@ export const DEFAULT_DATA: AppData = {
     system: 'DayDream AI Company System',
     subtitle: 'AI社員23人体制 統合ダッシュボード',
     presidentName: 'トシさん',
-    version: 'v1.8.0',
+    version: 'v1.9.0',
   },
 
   finance: {
@@ -167,6 +167,8 @@ export const DEFAULT_DATA: AppData = {
   backup: { last: '今日 03:00', next: '明日 03:00', state: '正常' },
 
   staff: DEFAULT_STAFF,
+  // 名簿を変更したら、この数字を1つ増やしてください（保存済みデータに反映されます）
+  staffVersion: 2,
 }
 
 /* ── 画面固定の表示物（Firestoreには保存しません） ────────── */

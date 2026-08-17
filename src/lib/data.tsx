@@ -32,10 +32,31 @@ interface DataValue {
 
 const Ctx = createContext<DataValue | null>(null)
 
-/** 初期データに足りないキーを補う（項目を追加したときの互換用） */
+/**
+ * 初期データに足りないキーを補う（項目を追加したときの互換用）
+ *
+ * AI社員の名簿は、初期データ側の版数（staffVersion）が新しい場合、
+ * 名前・役職・アバターを自動で最新に差し替えます。
+ * 稼働状況とタスク数は、保存されている値をそのまま引き継ぎます。
+ */
 function merge(base: AppData, incoming: Partial<AppData> | null | undefined): AppData {
   if (!incoming) return base
-  return { ...base, ...incoming }
+
+  const merged: AppData = { ...base, ...incoming }
+
+  const savedVersion = incoming.staffVersion ?? 0
+  const latestVersion = base.staffVersion ?? 0
+
+  if (savedVersion < latestVersion) {
+    const savedStaff = Array.isArray(incoming.staff) ? incoming.staff : []
+    merged.staff = base.staff.map((def) => {
+      const old = savedStaff.find((s) => s.id === def.id)
+      return old ? { ...def, status: old.status, tasks: old.tasks } : def
+    })
+    merged.staffVersion = latestVersion
+  }
+
+  return merged
 }
 
 function readLocal(): Partial<AppData> | null {
@@ -63,8 +84,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ref,
         (snap) => {
           if (snap.exists()) {
-            setData(merge(DEFAULT_DATA, snap.data() as Partial<AppData>))
+            const saved = snap.data() as Partial<AppData>
+            const next = merge(DEFAULT_DATA, saved)
+            setData(next)
             setSource('firestore')
+            // 名簿が更新された場合は、保存先にも反映しておきます
+            if ((saved.staffVersion ?? 0) < (DEFAULT_DATA.staffVersion ?? 0)) {
+              void setDoc(ref, { staff: next.staff, staffVersion: next.staffVersion }, { merge: true })
+            }
           } else {
             // 初回は初期データを書き込んでおく
             void setDoc(ref, { ...DEFAULT_DATA, updatedAt: new Date().toISOString() })
@@ -85,8 +112,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
     // デモ／未ログイン：端末内のデータ
     const local = readLocal()
-    setData(merge(DEFAULT_DATA, local))
+    const next = merge(DEFAULT_DATA, local)
+    setData(next)
     setSource(local ? 'local' : 'default')
+    if (local && (local.staffVersion ?? 0) < (DEFAULT_DATA.staffVersion ?? 0)) {
+      try {
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(next))
+      } catch {
+        // 保存できなくても表示は最新になります
+      }
+    }
     setLoading(false)
     return
   }, [user, demo])
