@@ -3,6 +3,7 @@ import { useData } from '../lib/data'
 import { useLibrary } from '../lib/library'
 import { MediaUpload } from '../components/MediaUpload'
 import { IntegrationStudio } from '../components/IntegrationStudio'
+import { MvGenerator } from '../components/MvGenerator'
 import { copyText, openService, SERVICES } from '../lib/integrations'
 import { formatSize } from '../lib/storage'
 import { Panel, MoreLink, ProgressBar, ACCENT } from '../components/Ui'
@@ -34,6 +35,7 @@ const KIND_SUMMARY = [
 ]
 
 const SECTIONS = [
+  { id: 'mvgen', label: 'MV一括生成', icon: IconFilm, accent: 'pink' as const },
   { id: 'integration', label: '外部連携', icon: IconSparkle, accent: 'green' as const },
   { id: 'music', label: '音楽制作', icon: IconMusic, accent: 'purple' as const },
   { id: 'image', label: '画像生成', icon: IconImage, accent: 'cyan' as const },
@@ -122,6 +124,8 @@ export function Studio() {
           )
         })}
       </nav>
+
+      <MvGenerator />
 
       <IntegrationStudio />
 

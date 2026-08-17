@@ -1,7 +1,7 @@
 {
   "name": "daydream-ai-company-system",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "description": "DayDream AI Company System - 社長1人 + AI社員による統合経営・制作ダッシュボード",
   "scripts": {
@@ -12,7 +12,8 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "firebase": "^10.14.1"
+    "firebase": "^10.14.1",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "@types/react": "^18.3.12",
