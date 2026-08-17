@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useData } from '../lib/data'
 import { useLibrary } from '../lib/library'
 import { MediaUpload } from '../components/MediaUpload'
+import { IntegrationStudio } from '../components/IntegrationStudio'
+import { copyText, openService, SERVICES } from '../lib/integrations'
 import { formatSize } from '../lib/storage'
 import { Panel, MoreLink, ProgressBar, ACCENT } from '../components/Ui'
 import { Donut, Sparkline, Waveform } from '../components/Charts'
@@ -32,6 +34,7 @@ const KIND_SUMMARY = [
 ]
 
 const SECTIONS = [
+  { id: 'integration', label: '外部連携', icon: IconSparkle, accent: 'green' as const },
   { id: 'music', label: '音楽制作', icon: IconMusic, accent: 'purple' as const },
   { id: 'image', label: '画像生成', icon: IconImage, accent: 'cyan' as const },
   { id: 'mv', label: 'MV制作', icon: IconFilm, accent: 'pink' as const },
@@ -86,6 +89,7 @@ export function Studio() {
   const [tab, setTab] = useState<'lyrics' | 'compose' | 'bgm' | 'manage'>('lyrics')
   const [imageTab, setImageTab] = useState<'gen' | 'edit' | 'gallery'>('gen')
   const [prompt, setPrompt] = useState('DayDream Plus 5人 ステージ ネオンライト')
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!playing) return
@@ -118,6 +122,8 @@ export function Studio() {
           )
         })}
       </nav>
+
+      <IntegrationStudio />
 
       <div className="layout-grid grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
         {/* ── 音楽制作 ───────────────────────────── */}
@@ -237,11 +243,22 @@ export function Studio() {
             />
             <button
               type="button"
-              className="px-3 rounded-lg text-[11px] bg-cyan-500/25 ring-1 ring-cyan-400/40 text-cyan-100 hover:bg-cyan-500/40 transition"
+              onClick={async () => {
+                await copyText(prompt)
+                setCopied(true)
+                window.setTimeout(() => setCopied(false), 2000)
+                const g = SERVICES.find((x) => x.id === 'genspark')
+                if (g) openService(g.url)
+              }}
+              className="px-3 rounded-lg text-[11px] bg-cyan-500/25 ring-1 ring-cyan-400/40 text-cyan-100 hover:bg-cyan-500/40 transition shrink-0"
             >
-              生成する
+              {copied ? 'コピーしました' : 'Gensparkで生成'}
             </button>
           </div>
+
+          <p className="mt-1 text-[9px] text-slate-600">
+            プロンプトがコピーされ、Gensparkが開きます。生成した画像は下の枠に戻してください
+          </p>
 
           <p className="mt-3 mb-1.5 text-[11px] text-slate-400">
             画像ライブラリ（{images.length}枚）

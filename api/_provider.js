@@ -25,6 +25,12 @@ export const PROVIDERS = [
     envKey: 'OPENAI_API_KEY',
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
   },
+  {
+    name: 'anthropic',
+    label: 'Claude',
+    envKey: 'ANTHROPIC_API_KEY',
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5',
+  },
 ]
 
 /** 使える状態のプロバイダ名を返す */
@@ -98,6 +104,32 @@ async function callOpenAI(key, model, system, messages, maxTokens, json) {
   return text
 }
 
+async function callAnthropic(key, model, system, messages, maxTokens) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      temperature: 0.75,
+      system,
+      messages: messages.map((m) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      })),
+    }),
+  })
+  if (!res.ok) throw new Error(`Claude ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  const data = await res.json()
+  const text = data?.content?.filter((c) => c.type === 'text').map((c) => c.text).join('').trim()
+  if (!text) throw new Error('Claudeの応答が空でした')
+  return text
+}
+
 /**
  * AIに問い合わせる（使えるものを上から順に試します）
  * 戻り値： { text, provider, model }
@@ -113,7 +145,8 @@ export async function askProviders(system, messages, { maxTokens = 900, json = f
       let text
       if (p.name === 'groq') text = await callGroq(key, p.model, system, messages, maxTokens, json)
       else if (p.name === 'gemini') text = await callGemini(key, p.model, system, messages, maxTokens, json)
-      else text = await callOpenAI(key, p.model, system, messages, maxTokens, json)
+      else if (p.name === 'openai') text = await callOpenAI(key, p.model, system, messages, maxTokens, json)
+      else text = await callAnthropic(key, p.model, system, messages, maxTokens)
       return { text, provider: p.label, model: p.model }
     } catch (e) {
       errors.push(`${p.label}: ${e.message}`)
@@ -124,7 +157,7 @@ export async function askProviders(system, messages, { maxTokens = 900, json = f
     return {
       error: 'NO_KEY',
       detail:
-        'Vercelの Settings → Environment Variables に GROQ_API_KEY / GEMINI_API_KEY / OPENAI_API_KEY のいずれかを登録し、再デプロイしてください。',
+        'Vercelの Settings → Environment Variables に GROQ_API_KEY / GEMINI_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY のいずれかを登録し、再デプロイしてください。',
     }
   }
   return { error: 'ALL_FAILED', detail: errors.join(' / ') }

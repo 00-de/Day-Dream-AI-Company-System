@@ -1,4 +1,4 @@
-# DayDream AI Company System v1.9.0
+# DayDream AI Company System v2.0.0
 
 社長1人 ＋ AI社員23人による、次世代型AIエンターテインメント会社の統合ダッシュボードです。
 
@@ -151,6 +151,7 @@ src/
 | `GROQ_API_KEY` | Groq のAPIキー（おすすめ・無料枠が大きい） |
 | `GEMINI_API_KEY` | Google Gemini のAPIキー |
 | `OPENAI_API_KEY` | OpenAI のAPIキー |
+| `ANTHROPIC_API_KEY` | Claude のAPIキー |
 
 3つ全部は不要です。1つ登録すれば動きます。
 
@@ -196,6 +197,16 @@ Firebaseコンソールで **Storage を有効化 → `storage.rules` を公開 
 
 Firestore に **`meetings`** コレクションが追加されています。
 `firestore.rules` を更新版に貼り替えてください。
+
+---
+
+## 外部サービス連携
+
+制作画面の一番上にあります。詳細は **`INTEGRATION.md`** を参照してください。
+
+- **ChatGPT・Claude** … 公式APIで直接つながります
+- **Suno・Genspark・CapCut** … 公開APIが無いため、AIが専用の指示文を作り、コピーしてサービスを開く半自動連携です
+- CapCut用に、アップロード済み素材のURL一覧をテキストで保存できます
 
 ---
 
