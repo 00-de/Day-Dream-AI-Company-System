@@ -253,6 +253,8 @@ export interface Meeting {
   tasks: MeetingTask[]
   /** 会議前に集めた人間メンバーの意見 */
   humanOpinions?: HumanOpinion[]
+  /** 会議に参加していない社員から集めた意見 */
+  staffOpinions?: StaffOpinion[]
   /** 生成に使ったAI（Groq / Gemini / OpenAI / オフライン） */
   provider: string
   createdAt: string
@@ -264,5 +266,12 @@ export interface HumanOpinion {
   id: string
   name: string
   title: string
+  text: string
+}
+
+/** 会議に参加していない社員の意見 */
+export interface StaffOpinion {
+  name: string
+  stance: 'agree' | 'conditional' | 'concern'
   text: string
 }

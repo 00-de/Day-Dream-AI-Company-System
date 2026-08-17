@@ -1,4 +1,4 @@
-import type { AppData, AiStaff, MeetingTurn, MeetingTask, HumanOpinion } from '../types'
+import type { AppData, AiStaff, MeetingTurn, MeetingTask, HumanOpinion, StaffOpinion } from '../types'
 import { buildContext } from './ai'
 
 /* ============================================================
@@ -141,5 +141,60 @@ export function offlineMeeting(
     tasks,
     provider: 'オフライン生成',
     offline: true,
+  }
+}
+
+
+/* ============================================================
+   会議に参加していない社員から意見を集める
+   ============================================================ */
+
+export interface OpinionsResult {
+  opinions: StaffOpinion[]
+  provider: string
+  error?: string
+}
+
+export async function collectOpinions(
+  topic: string,
+  summary: string,
+  decisions: string[],
+  members: AiStaff[],
+  humanOpinions: HumanOpinion[],
+  data: AppData,
+): Promise<OpinionsResult> {
+  try {
+    const res = await fetch('/api/opinions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        summary,
+        decisions,
+        members: members.map((m) => ({ name: m.name, role: m.role })),
+        humanOpinions: humanOpinions.map((h) => ({ name: h.name, text: h.text })),
+        context: buildContext(data),
+      }),
+    })
+
+    if (res.ok) return (await res.json()) as OpinionsResult
+
+    const err = (await res.json().catch(() => null)) as { error?: string } | null
+    return { ...offlineOpinions(members), error: err?.error ?? undefined }
+  } catch {
+    return offlineOpinions(members)
+  }
+}
+
+/** AIに接続できないときの簡易意見 */
+export function offlineOpinions(members: AiStaff[]): OpinionsResult {
+  const stances: StaffOpinion['stance'][] = ['agree', 'agree', 'conditional', 'agree', 'concern']
+  return {
+    opinions: members.map((m, i) => ({
+      name: m.name,
+      stance: stances[i % stances.length],
+      text: `${m.role}の立場としては、進める方向で問題ないと考えます。担当範囲で必要な準備があれば対応します。※AIに接続できていないため簡易表示です。`,
+    })),
+    provider: 'オフライン生成',
   }
 }

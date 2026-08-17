@@ -35,6 +35,7 @@ interface LibraryValue {
   addMedia: (item: Omit<MediaItem, 'id' | 'uploadedAt'>) => Promise<void>
   deleteMedia: (item: MediaItem) => Promise<void>
   addMeeting: (meeting: Omit<Meeting, 'id' | 'createdAt'>) => Promise<Meeting>
+  updateMeeting: (id: string, patch: Partial<Meeting>) => Promise<void>
   deleteMeeting: (id: string) => Promise<void>
 }
 
@@ -181,6 +182,16 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     return next
   }
 
+  const updateMeeting: LibraryValue['updateMeeting'] = async (id, patch) => {
+    if (online && db) {
+      await setDoc(doc(db, 'meetings', id), patch, { merge: true })
+    } else {
+      const list = meetings.map((m) => (m.id === id ? { ...m, ...patch } : m))
+      setMeetings(list)
+      writeLocal(LOCAL_MEETINGS, list)
+    }
+  }
+
   const deleteMeeting: LibraryValue['deleteMeeting'] = async (id) => {
     if (online && db) {
       await deleteDoc(doc(db, 'meetings', id))
@@ -202,6 +213,7 @@ export function LibraryProvider({ children }: { children: ReactNode }) {
     addMedia,
     deleteMedia,
     addMeeting,
+    updateMeeting,
     deleteMeeting,
   }
 

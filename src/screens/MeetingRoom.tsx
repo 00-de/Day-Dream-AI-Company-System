@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { AiStaff, Meeting, MeetingTurn, HumanOpinion } from '../types'
+import type { AiStaff, Meeting, MeetingTurn, HumanOpinion, StaffOpinion } from '../types'
 import { useData } from '../lib/data'
 import { useLibrary } from '../lib/library'
 import { useAuth } from '../lib/auth'
-import { holdMeeting } from '../lib/meeting'
+import { holdMeeting, collectOpinions } from '../lib/meeting'
 import { Panel, ACCENT, StateBadge, MoreLink } from '../components/Ui'
 import { Avatar } from '../components/Avatar'
 import { HUMANS } from '../data/humans'
@@ -27,7 +27,7 @@ const TOPIC_PRESETS = [
 
 export function MeetingRoom() {
   const { data } = useData()
-  const { addMeeting, meetings, deleteMeeting, addTask } = useLibrary()
+  const { addMeeting, updateMeeting, meetings, deleteMeeting, addTask } = useLibrary()
   const { account } = useAuth()
 
   const [topic, setTopic] = useState('')
@@ -42,6 +42,9 @@ export function MeetingRoom() {
   const [opinions, setOpinions] = useState<HumanOpinion[]>([])
   const [whoId, setWhoId] = useState(HUMANS[0].id)
   const [opinionText, setOpinionText] = useState('')
+  const [staffOpinions, setStaffOpinions] = useState<StaffOpinion[]>([])
+  const [collecting, setCollecting] = useState(false)
+  const [opinionFilter, setOpinionFilter] = useState<'all' | 'concern'>('all')
   const logRef = useRef<HTMLDivElement>(null)
 
   const staffOf = (id: string) => data.staff.find((s) => s.id === id)
@@ -89,6 +92,7 @@ export function MeetingRoom() {
     setCurrent(null)
     setShownTurns(0)
     setAddedTasks([])
+    setStaffOpinions([])
 
     const result = await holdMeeting(topic.trim(), note.trim(), participants, data, rounds, opinions)
 
@@ -127,9 +131,34 @@ export function MeetingRoom() {
     setAddedTasks((list) => [...list, title])
   }
 
+  /** 会議に参加していない社員から意見を集める */
+  const askEveryone = async () => {
+    if (!current || collecting) return
+    const absent = data.staff.filter((st) => !current.participants.includes(st.id))
+    if (absent.length === 0) return
+
+    setCollecting(true)
+    const r = await collectOpinions(
+      current.topic,
+      current.summary,
+      current.decisions,
+      absent,
+      current.humanOpinions ?? [],
+      data,
+    )
+    setStaffOpinions(r.opinions)
+    // 集めた意見は、そのまま会議記録に保存します
+    if (r.opinions.length > 0 && account.canEdit) {
+      await updateMeeting(current.id, { staffOpinions: r.opinions })
+      setCurrent({ ...current, staffOpinions: r.opinions })
+    }
+    setCollecting(false)
+  }
+
   const openHistory = (m: Meeting) => {
     setCurrent(m)
     setOpinions(m.humanOpinions ?? [])
+    setStaffOpinions(m.staffOpinions ?? [])
     setShownTurns(m.turns.length)
     setTopic(m.topic)
     setAddedTasks([])
@@ -521,6 +550,106 @@ export function MeetingRoom() {
                     登録したタスクは、経営ダッシュボードの「タスク管理」に入ります
                   </p>
                 )}
+              </>
+            )}
+          </Panel>
+        )}
+
+        {/* 参加していない社員の意見 */}
+        {current && finished && (
+          <Panel
+            title={`参加していないAI社員の意見（${
+              data.staff.filter((st) => !current.participants.includes(st.id)).length
+            }人）`}
+            action={
+              staffOpinions.length > 0 && (
+                <div className="flex gap-1">
+                  {(['all', 'concern'] as const).map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() => setOpinionFilter(f)}
+                      className={`text-[10px] px-2 py-1 rounded-md transition ${
+                        opinionFilter === f
+                          ? 'bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-400/40'
+                          : 'text-slate-400 hover:text-slate-100'
+                      }`}
+                    >
+                      {f === 'all' ? 'すべて' : '懸念のみ'}
+                    </button>
+                  ))}
+                </div>
+              )
+            }
+          >
+            {staffOpinions.length === 0 ? (
+              <div className="text-center py-3">
+                <p className="text-[11px] text-slate-400 mb-2.5 leading-relaxed">
+                  この会議に出ていない社員にも、決まった内容への意見を聞けます。
+                  見落としや反対意見が出てくることがあります。
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void askEveryone()}
+                  disabled={collecting}
+                  className="px-4 py-2.5 rounded-lg text-[12px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition"
+                >
+                  {collecting ? '全員に意見を聞いています…（20〜40秒）' : '全員に意見を聞く'}
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* 集計 */}
+                <div className="inner-grid grid grid-cols-3 gap-2 mb-3">
+                  {([
+                    ['agree', '賛成', 'text-emerald-300'],
+                    ['conditional', '条件付き', 'text-amber-300'],
+                    ['concern', '懸念あり', 'text-red-300'],
+                  ] as const).map(([key, label, color]) => (
+                    <div key={key} className="panel py-2 text-center">
+                      <p className={`font-num text-[16px] font-bold ${color}`}>
+                        {staffOpinions.filter((o) => o.stance === key).length}
+                      </p>
+                      <p className="text-[9px] text-slate-500">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <ul className="scroll-box space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                  {staffOpinions
+                    .filter((o) => opinionFilter === 'all' || o.stance === 'concern')
+                    .map((o, i) => {
+                      const st = speakerOf(o.name)
+                      const accent = st?.accent ?? 'cyan'
+                      const badge =
+                        o.stance === 'agree'
+                          ? ['賛成', 'text-emerald-300 ring-emerald-400/30 bg-emerald-400/10']
+                          : o.stance === 'conditional'
+                            ? ['条件付き', 'text-amber-300 ring-amber-400/30 bg-amber-400/10']
+                            : ['懸念あり', 'text-red-300 ring-red-400/30 bg-red-400/10']
+                      return (
+                        <li key={`${o.name}-${i}`} className="panel p-2.5 flex gap-2.5">
+                          <Avatar name={o.name} src={st?.avatar} accent={accent} size={30} rounded="rounded-lg" />
+                          <div className="min-w-0 flex-1">
+                            <p className="flex items-center gap-2">
+                              <span className={`text-[11px] font-bold ${ACCENT[accent].text}`}>{o.name}</span>
+                              {st && <span className="text-[9px] text-slate-600 truncate">{st.role}</span>}
+                              <span className={`ml-auto text-[9px] px-1.5 py-[1px] rounded ring-1 shrink-0 ${badge[1]}`}>
+                                {badge[0]}
+                              </span>
+                            </p>
+                            <p className="text-[11px] text-slate-300 mt-1 leading-relaxed whitespace-pre-wrap">
+                              {o.text}
+                            </p>
+                          </div>
+                        </li>
+                      )
+                    })}
+                </ul>
+
+                <p className="mt-2.5 text-[10px] text-slate-500">
+                  集めた意見は会議記録に保存されています。過去の会議を開くと読み返せます。
+                </p>
               </>
             )}
           </Panel>
