@@ -121,7 +121,7 @@ export function SecretaryChat({ compact = false }: { compact?: boolean }) {
       {/* 会話 */}
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto space-y-2 pr-1"
+        className="scroll-box flex-1 overflow-y-auto space-y-2 pr-1"
         style={{ maxHeight: compact ? 190 : 320 }}
       >
         {messages.map((m) => (

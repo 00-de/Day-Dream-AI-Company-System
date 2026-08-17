@@ -119,7 +119,7 @@ export function Studio() {
         })}
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
+      <div className="layout-grid grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-3">
         {/* ── 音楽制作 ───────────────────────────── */}
         <Panel
           title="音楽制作"
@@ -270,7 +270,7 @@ export function Studio() {
           <p className="mt-3 mb-1.5 text-[11px] text-slate-400">動画ライブラリ（{videos.length}本）</p>
           <MediaUpload accept="video/*" kinds={['video']} columns={4} emptyText="動画をアップロードしてください" />
 
-          <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+          <div className="inner-grid mt-3 grid grid-cols-3 gap-2 text-[10px]">
             {['字幕生成', 'エフェクト', '音声同期'].map((x) => (
               <button
                 key={x}
@@ -328,7 +328,7 @@ export function Studio() {
         {/* ── YouTube管理 ────────────────────────── */}
         <Panel title="YouTube管理" className="scroll-mt-20" action={<MoreLink label="動画一覧" />}>
           <div id="youtube" />
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="inner-grid grid grid-cols-3 gap-2 text-center">
             {[
               ['チャンネル登録者数', YOUTUBE.subscribers, YOUTUBE.subscribersDiff],
               ['総再生回数（今月）', YOUTUBE.views, YOUTUBE.viewsDiff],
@@ -362,7 +362,7 @@ export function Studio() {
         {/* ── ファイル管理 ───────────────────────── */}
         <Panel title="ファイル管理" className="scroll-mt-20" action={<MoreLink label="バックアップ設定" />}>
           <div id="files" />
-          <div className="grid grid-cols-4 gap-2 mb-3">
+          <div className="inner-grid grid grid-cols-4 gap-2 mb-3">
             {KIND_SUMMARY.map((k) => (
               <div key={k.kind} className="panel py-2.5 text-center">
                 <div className="text-[16px]">{k.icon}</div>
@@ -384,7 +384,7 @@ export function Studio() {
 
           <MediaUpload columns={6} emptyText="ここにファイルをアップロードできます" />
 
-          <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+          <div className="inner-grid mt-3 grid grid-cols-2 gap-2 text-[10px]">
             {['Firebase Storage', 'Google Drive', 'ローカル保存', '自動バックアップ'].map((x) => (
               <div key={x} className="panel px-2.5 py-1.5 flex items-center gap-1.5">
                 <IconCheck className="w-3 h-3 text-emerald-400 shrink-0" />

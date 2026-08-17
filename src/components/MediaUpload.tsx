@@ -132,7 +132,7 @@ export function MediaUpload({
       {list.length === 0 ? (
         <p className="text-[11px] text-slate-500 text-center py-4">{emptyText}</p>
       ) : (
-        <div className={`mt-3 grid gap-1.5`} style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
+        <div className="inner-grid mt-3 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}>
           {list.map((m) => (
             <div key={m.id} className="relative group">
               <button

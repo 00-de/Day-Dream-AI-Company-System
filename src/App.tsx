@@ -12,6 +12,8 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { DataProvider, useData } from './lib/data'
 import { LibraryProvider } from './lib/library'
 import { isFirebaseConfigured } from './lib/firebase'
+import { ScaleProvider } from './lib/uiScale'
+import { ScaleSettings } from './components/ScalePicker'
 import { checkAiStatus } from './lib/ai'
 
 /* ============================================================
@@ -151,6 +153,11 @@ function Main() {
           </section>
 
           <section className="panel p-3">
+            <h3 className="text-[12px] font-bold text-slate-100 mb-2">文字の大きさ</h3>
+            <ScaleSettings />
+          </section>
+
+          <section className="panel p-3">
             <h3 className="text-[12px] font-bold text-slate-100 mb-2">AI接続</h3>
             <dl className="space-y-1 text-[11px]">
               <div className="flex justify-between gap-3">
@@ -245,8 +252,12 @@ function Gate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Gate />
-    </AuthProvider>
+    <ScaleProvider>
+      <div className="scale-root">
+        <AuthProvider>
+          <Gate />
+        </AuthProvider>
+      </div>
+    </ScaleProvider>
   )
 }

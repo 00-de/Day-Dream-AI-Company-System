@@ -120,7 +120,7 @@ export function MeetingRoom() {
   const finished = current !== null && shownTurns >= current.turns.length
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-3">
+    <div className="layout-grid grid grid-cols-1 xl:grid-cols-12 gap-3">
       {/* ─────────── 左：会議の設定 ─────────── */}
       <div className="xl:col-span-3 space-y-3">
         <Panel title="議題">
@@ -181,7 +181,7 @@ export function MeetingRoom() {
           title={`参加するAI社員（${participants.length}人）`}
           action={<span className="text-[9px] text-slate-500">最大6人</span>}
         >
-          <div className="space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
+          <div className="scroll-box space-y-1.5 max-h-[420px] overflow-y-auto pr-1">
             {data.staff.map((s) => {
               const on = selected.includes(s.id)
               return (
@@ -261,7 +261,7 @@ export function MeetingRoom() {
           </div>
 
           {/* 発言 */}
-          <div ref={logRef} className="space-y-3 min-h-[300px] max-h-[520px] overflow-y-auto pr-1">
+          <div ref={logRef} className="scroll-box space-y-3 min-h-[300px] max-h-[520px] overflow-y-auto pr-1">
             {!current && !running && (
               <div className="h-[300px] grid place-content-center text-center">
                 <IconUsers className="w-8 h-8 text-slate-700 mx-auto" />
@@ -390,7 +390,7 @@ export function MeetingRoom() {
           {meetings.length === 0 ? (
             <p className="text-[11px] text-slate-500 py-4 text-center">まだ会議の記録はありません</p>
           ) : (
-            <ul className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
+            <ul className="scroll-box space-y-2 max-h-[560px] overflow-y-auto pr-1">
               {meetings.map((m) => (
                 <li key={m.id} className="panel panel-hover p-2.5">
                   <button type="button" onClick={() => openHistory(m)} className="w-full text-left">

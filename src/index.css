@@ -113,3 +113,51 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ============================================================
+   文字の大きさ（画面全体の拡大）
+   --ui-scale は ScaleProvider が設定します
+   ============================================================ */
+
+.scale-root {
+  zoom: var(--ui-scale, 1);
+}
+
+/* zoom に未対応のブラウザ向けの保険 */
+@supports not (zoom: 1.4) {
+  .scale-root {
+    transform: scale(var(--ui-scale, 1));
+    transform-origin: top left;
+    width: calc(100% / var(--ui-scale, 1));
+  }
+}
+
+/* 140%以上：主要な段組みを縦並びにして、横スクロールを防ぐ */
+html[data-scale='140'] .layout-grid,
+html[data-scale='180'] .layout-grid,
+html[data-scale='280'] .layout-grid {
+  grid-template-columns: 1fr !important;
+}
+
+/* 180%以上：パネル内の細かい段組みも減らす */
+html[data-scale='180'] .inner-grid,
+html[data-scale='280'] .inner-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+/* 280%：ヘッダーを折り返して、すべて縦に積む */
+html[data-scale='280'] .inner-grid {
+  grid-template-columns: 1fr !important;
+}
+
+html[data-scale='180'] .header-bar,
+html[data-scale='280'] .header-bar {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+/* 大きい表示のときは、スクロール枠の高さ制限をゆるめる */
+html[data-scale='180'] .scroll-box,
+html[data-scale='280'] .scroll-box {
+  max-height: none !important;
+}

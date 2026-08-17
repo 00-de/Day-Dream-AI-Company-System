@@ -63,11 +63,11 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
   )
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-3">
+    <div className="layout-grid grid grid-cols-1 xl:grid-cols-12 gap-3">
       {/* ─────────── 左：メインエリア ─────────── */}
       <div className="xl:col-span-9 space-y-3">
         {/* KPI */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="layout-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <Panel title="売上サマリー（今月）" className="lg:col-span-1">
             <p className="font-num text-[22px] font-bold text-slate-50 leading-none">{yen(FINANCE.monthSales)}</p>
             <p className="mt-1 text-[10px] text-slate-400">
@@ -161,7 +161,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
             </div>
           }
         >
-          <div id="ai-staff" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-2.5">
+          <div id="ai-staff" className="inner-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-2.5">
             {list.map((st) => (
               <StaffCard key={st.id} staff={st} onSelect={setSelected} />
             ))}
@@ -194,11 +194,11 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
         </Panel>
 
         {/* 下段 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-3">
+        <div className="layout-grid grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-3">
           <TaskPanel />
 
           <Panel title="ファイル管理" action={<MoreLink label="スタジオで開く" onClick={onGoStudio} />}>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="inner-grid grid grid-cols-4 gap-2">
               {UPLOAD_KINDS.map((k) => (
                 <div key={k.kind} className="text-center panel-hover panel py-2.5 px-1">
                   <div className="text-[16px]">{k.icon}</div>
@@ -242,7 +242,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
                 <StateBadge text={BACKUP.state} />
               </span>
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="inner-grid mt-3 grid grid-cols-3 gap-2">
               {SYSTEM_METRICS.map((m) => (
                 <div key={m.label} className="text-center">
                   <Donut value={m.value} size={62} stroke={6} accent={m.accent} />
@@ -273,7 +273,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
         </Panel>
 
         <Panel title="制作・運用ツール" action={<MoreLink label="すべてのツール" onClick={onGoStudio} />}>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="inner-grid grid grid-cols-4 gap-2">
             {TOOLS.map((t) => {
               const Icon = t.icon
               const a = ACCENT[t.accent]

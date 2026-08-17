@@ -3,6 +3,7 @@ import { useData } from '../lib/data'
 import { useAuth } from '../lib/auth'
 import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit, IconMeeting } from './Icons'
 import { StatusDot } from './Ui'
+import { ScalePicker } from './ScalePicker'
 
 /* ============================================================
    上部ヘッダー（画面切替タブ）
@@ -74,7 +75,7 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur-xl bg-night-950/80 border-b border-cyan-400/10">
-      <div className="mx-auto max-w-[1800px] px-4 py-2.5 flex items-center gap-4">
+      <div className="header-bar mx-auto max-w-[1800px] px-4 py-2.5 flex items-center gap-4">
         {/* ロゴ */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="relative w-9 h-9 rounded-xl grid place-content-center bg-gradient-to-br from-cyan-500/25 to-purple-600/25 ring-1 ring-cyan-400/40">
@@ -150,6 +151,8 @@ export function Header({
 
         {/* 社長 */}
         <div className="flex items-center gap-3 shrink-0">
+          <ScalePicker />
+
           <div className="text-right leading-tight hidden lg:block">
             <p className="font-num text-[13px] text-slate-200">{time}</p>
             <p className="text-[10px] text-slate-500">{date}</p>
