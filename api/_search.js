@@ -45,7 +45,7 @@ async function searchTavily(key, query, count) {
       title: r.title ?? '',
       url: r.url ?? '',
       // Tavilyはページ本文の抜粋を返します
-      content: (r.content ?? '').slice(0, 1200),
+      content: (r.content ?? '').slice(0, 700),
       score: r.score ?? 0,
     })),
   }

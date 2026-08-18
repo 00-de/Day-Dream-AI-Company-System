@@ -31,6 +31,8 @@ export interface AgentResult {
   sourceCount: number
   provider: string
   error?: string
+  /** 失敗したときの詳しい内容（原因調べ用） */
+  detail?: string
 }
 
 export const JOB_INFO: Record<JobKey, { label: string; staffId: string; hint: string; icon: string }> = {
@@ -78,6 +80,7 @@ export async function runAgent(job: JobKey, request: string, data: AppData): Pro
 
     const err = (await res.json().catch(() => null)) as { error?: string; detail?: string } | null
     return {
+      detail: err?.detail,
       job,
       label: '',
       staff: '',

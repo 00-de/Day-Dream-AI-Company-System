@@ -138,18 +138,33 @@ async function callAnthropic(key, model, system, messages, maxTokens) {
 export async function askProviders(system, messages, { maxTokens = 900, json = false } = {}) {
   const errors = []
 
+  /** 1つのプロバイダを呼ぶ */
+  const call = async (p, key, useJson) => {
+    if (p.name === 'groq') return callGroq(key, p.model, system, messages, maxTokens, useJson)
+    if (p.name === 'gemini') return callGemini(key, p.model, system, messages, maxTokens, useJson)
+    if (p.name === 'openai') return callOpenAI(key, p.model, system, messages, maxTokens, useJson)
+    return callAnthropic(key, p.model, system, messages, maxTokens)
+  }
+
   for (const p of PROVIDERS) {
     const key = process.env[p.envKey]
     if (!key) continue
+
     try {
-      let text
-      if (p.name === 'groq') text = await callGroq(key, p.model, system, messages, maxTokens, json)
-      else if (p.name === 'gemini') text = await callGemini(key, p.model, system, messages, maxTokens, json)
-      else if (p.name === 'openai') text = await callOpenAI(key, p.model, system, messages, maxTokens, json)
-      else text = await callAnthropic(key, p.model, system, messages, maxTokens)
+      const text = await call(p, key, json)
       return { text, provider: p.label, model: p.model }
     } catch (e) {
       errors.push(`${p.label}: ${e.message}`)
+
+      // JSON形式の指定に対応していないモデルがあるため、外してもう一度試します
+      if (json) {
+        try {
+          const text = await call(p, key, false)
+          return { text, provider: p.label, model: p.model }
+        } catch (e2) {
+          errors.push(`${p.label}(JSON指定なし): ${e2.message}`)
+        }
+      }
     }
   }
 

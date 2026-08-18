@@ -30,6 +30,7 @@ export function AgentPanel() {
   const [step, setStep] = useState('')
   const [result, setResult] = useState<AgentResult | null>(null)
   const [error, setError] = useState('')
+  const [detail, setDetail] = useState('')
   const [status, setStatus] = useState<{ ai: string[]; search: string[] } | null>(null)
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -53,8 +54,10 @@ export function AgentPanel() {
     window.setTimeout(() => setStep('集めた情報を読んでまとめています…'), 9000)
 
     const r = await runAgent(job, request.trim(), data)
-    if (r.error) setError(r.error)
-    else setResult(r)
+    if (r.error) {
+      setError(r.error)
+      setDetail(r.detail ?? '')
+    } else setResult(r)
     setStep('')
     setBusy(false)
   }
@@ -152,9 +155,19 @@ export function AgentPanel() {
       )}
 
       {error && (
-        <p className="mt-2 text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2">
-          {error}
-        </p>
+        <div className="mt-2 text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2">
+          <p>{error}</p>
+          {detail && (
+            <details className="mt-1.5">
+              <summary className="text-[10px] text-red-400/80 cursor-pointer">
+                詳しい内容を見る（原因を調べるとき用）
+              </summary>
+              <pre className="mt-1 text-[9px] text-slate-400 whitespace-pre-wrap break-all leading-relaxed">
+                {detail}
+              </pre>
+            </details>
+          )}
+        </div>
       )}
 
       {/* 結果 */}

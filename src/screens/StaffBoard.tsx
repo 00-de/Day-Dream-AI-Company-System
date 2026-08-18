@@ -9,6 +9,7 @@ import { Avatar } from '../components/Avatar'
 import { Donut } from '../components/Charts'
 import { IconCheck } from '../components/Icons'
 import { AgentPanel } from '../components/AgentPanel'
+import { SnsPanel, CheckPanel } from '../components/StaffWorkPanel'
 
 /* ============================================================
    AI社員ボード
@@ -25,6 +26,7 @@ function shortDate(d: string) {
 
 export function StaffBoard() {
   const { data } = useData()
+  const [toCheck, setToCheck] = useState('')
   const { tasks, updateTask } = useLibrary()
   const { account } = useAuth()
   const [group, setGroup] = useState<'all' | 'core' | 'member' | 'staff'>('all')
@@ -69,6 +71,11 @@ export function StaffBoard() {
     <div className="space-y-3">
       {/* AI社員に実際の仕事を頼む */}
       <AgentPanel />
+
+      <div className="layout-grid grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <SnsPanel onSendToCheck={setToCheck} />
+        <CheckPanel initialText={toCheck} />
+      </div>
 
       {/* 全体のようす */}
       <div className="layout-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">

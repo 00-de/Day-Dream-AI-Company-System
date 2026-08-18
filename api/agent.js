@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}
-    const { job = 'research', request = '', context = null, maxResults = 8 } = body
+    const { job = 'research', request = '', context = null, maxResults = 6 } = body
 
     const recipe = JOBS[job]
     if (!recipe) return res.status(400).json({ error: '対応していない仕事の種類です' })
@@ -143,7 +143,7 @@ export default async function handler(req, res) {
         : [request.trim()]
 
     /* ── 手順2：検索する ── */
-    const { groups, engines, errors } = await multiSearch(queries, 5)
+    const { groups, engines, errors } = await multiSearch(queries, 4)
 
     if (groups.length === 0) {
       return res.status(502).json({
@@ -179,14 +179,19 @@ export default async function handler(req, res) {
       [
         {
           role: 'user',
-          content: `依頼：${request.trim()}\n\n【検索して集めた情報】\n${formatForAi(groups).slice(0, 24000)}`,
+          content: `依頼：${request.trim()}\n\n【検索して集めた情報】\n${formatForAi(groups).slice(0, 9000)}`,
         },
       ],
-      { maxTokens: 4000, json: true },
+      { maxTokens: 2500, json: true },
     )
 
     if (work.error) {
-      return res.status(502).json({ error: 'AIへの接続に失敗しました', detail: work.detail, code: 'ALL_FAILED' })
+      return res.status(502).json({
+        error: 'AIへの接続に失敗しました',
+        // 実際のエラー内容を画面にも表示します（原因が分かるように）
+        detail: work.detail,
+        code: 'ALL_FAILED',
+      })
     }
 
     const result = parseJson(work.text)
