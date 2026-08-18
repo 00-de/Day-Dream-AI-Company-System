@@ -1,0 +1,40 @@
+SDayDream Music Studio — Phase 3 設定手順（APIキーの入れ方）
+
+■ どれか1つあれば動きます
+  GROQ_API_KEY    … おすすめ。無料枠があり、返答が速い
+  GEMINI_API_KEY  … Google AI Studio で取得
+  OPENAI_API_KEY  … 有料
+  ANTHROPIC_API_KEY … Claude。有料。日本語の作詞と推敲が得意
+
+■ キーの取り方
+  Groq   : https://console.groq.com  → API Keys → Create API Key
+  Gemini : https://aistudio.google.com → Get API key
+  OpenAI : https://platform.openai.com → API keys
+  Claude : https://console.anthropic.com → Settings → API keys → Create Key
+           ※ Claude Pro / Max の月額とは別会計です。Plans & Billing で
+             クレジットを購入しないと呼び出しがエラーになります
+
+■ Vercel への入れ方（すべてブラウザ操作）
+  1. Vercel でこのプロジェクトを開く
+  2. Settings → Environment Variables
+  3. Key に  GROQ_API_KEY  、Value に取得したキーを貼る
+  4. Environments は Production / Preview / Development すべてにチェック
+  5. Save
+  6. Deployments → 最新のものの「…」→ Redeploy
+     ※ 環境変数は再デプロイしないと反映されません
+
+■ 確認
+  アプリの「設定」画面 →「接続を確認」を押す
+  「接続あり： groq」と出れば成功です
+
+■ モデルを変えたいとき（任意）
+  次の名前を追加すると差し替えられます
+  GROQ_MODEL / GEMINI_MODEL / OPENAI_MODEL / CLAUDE_MODEL
+  既定値: llama-3.3-70b-versatile / gemini-2.0-flash / gpt-4o-mini / claude-sonnet-5
+  Claude を安く使うなら CLAUDE_MODEL に claude-haiku-4-5-20251001
+  最高品質にするなら claude-opus-5
+
+■ 注意
+  ・APIキーはサーバー側だけで使われ、ブラウザには渡していません
+  ・index.html をPCで直接開いた状態ではAI機能は動きません（Vercel上でのみ動作）
+  ・キーが未設定でも、これまでの下書き生成と作曲機能はそのまま使えます
