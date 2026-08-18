@@ -76,6 +76,7 @@ export default async function handler(req, res) {
 
     const result = await askProviders(system, [{ role: 'user', content: userMessage }], {
       maxTokens: 3500,
+      heavy: true,
       json: true,
     })
 

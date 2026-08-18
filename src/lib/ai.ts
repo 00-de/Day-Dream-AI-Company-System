@@ -42,6 +42,25 @@ export function buildContext(data: AppData) {
 }
 
 /** APIが使えるかどうかを確認する */
+export interface AiSettings {
+  order: string
+  rotate: boolean
+  heavy: string
+  next: string[]
+}
+
+/** AIの使い分け設定を取得します */
+export async function getAiSettings(): Promise<AiSettings | null> {
+  try {
+    const res = await fetch('/api/chat', { method: 'GET' })
+    if (!res.ok) return null
+    const json = (await res.json()) as { settings?: AiSettings }
+    return json.settings ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function checkAiStatus(): Promise<string[]> {
   try {
     const res = await fetch('/api/chat', { method: 'GET' })

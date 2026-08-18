@@ -16,7 +16,7 @@ import { LibraryProvider } from './lib/library'
 import { isFirebaseConfigured } from './lib/firebase'
 import { ScaleProvider } from './lib/uiScale'
 import { ScaleSettings } from './components/ScalePicker'
-import { checkAiStatus } from './lib/ai'
+import { checkAiStatus, getAiSettings, type AiSettings } from './lib/ai'
 
 /* ============================================================
    DayDream AI Company System v1.1.0
@@ -45,10 +45,14 @@ function Main() {
   const [settings, setSettings] = useState(false)
   const [edit, setEdit] = useState(false)
   const [aiProviders, setAiProviders] = useState<string[] | null>(null)
+  const [aiSettings, setAiSettings] = useState<AiSettings | null>(null)
 
   // 設定を開いたときに、AIの接続状態を確認する
   useEffect(() => {
-    if (settings) void checkAiStatus().then(setAiProviders)
+    if (settings) {
+      void checkAiStatus().then(setAiProviders)
+      void getAiSettings().then(setAiSettings)
+    }
   }, [settings])
 
   if (loading) return <LoadingScreen message="データを読み込んでいます…" />
@@ -184,6 +188,27 @@ function Main() {
                 </dd>
               </div>
             </dl>
+            {aiSettings && aiProviders && aiProviders.length > 1 && (
+              <dl className="mt-2 pt-2 border-t border-white/10 space-y-1 text-[11px]">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-slate-400">使い分け</dt>
+                  <dd className="text-slate-200 text-right">
+                    {aiSettings.rotate ? '交互に使用' : '上から順に使用'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-slate-400">次に使う順</dt>
+                  <dd className="text-slate-200 text-right text-[10px]">{aiSettings.next.join(' → ')}</dd>
+                </div>
+                {aiSettings.heavy && (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-slate-400">重い処理</dt>
+                    <dd className="text-slate-200 text-right">{aiSettings.heavy} を優先</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+
             {aiProviders !== null && aiProviders.length === 0 && (
               <p className="mt-2 text-[10px] text-amber-300/90 leading-relaxed">
                 Vercelの Settings → Environment Variables に GROQ_API_KEY（または GEMINI_API_KEY /

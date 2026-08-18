@@ -6,6 +6,9 @@
    優先順： Groq → Gemini → OpenAI
    ============================================================ */
 
+/** 交互利用のための呼び出し回数（サーバーが起きている間だけ保持されます） */
+let rotateCount = 0
+
 export const PROVIDERS = [
   {
     name: 'groq',
@@ -54,6 +57,56 @@ export function findSuggestedModel(message) {
 /** 使える状態のプロバイダ名を返す */
 export function availableProviders() {
   return PROVIDERS.filter((p) => Boolean(process.env[p.envKey])).map((p) => p.label)
+}
+
+/**
+ * 使う順番を決めます
+ *
+ * AI_ORDER で優先順を指定できます（例： openai,groq,gemini）
+ * AI_ROTATE=1 にすると、呼び出しごとに先頭をずらして交互に使います
+ * heavy=true（会議・調査など重い処理）のときは AI_HEAVY で指定したものを先頭にします
+ */
+function orderedProviders(heavy = false) {
+  const usable = PROVIDERS.filter((p) => Boolean(process.env[p.envKey]))
+  if (usable.length <= 1) return usable
+
+  // 重い処理は、指定があればそれを最優先にします
+  if (heavy && process.env.AI_HEAVY) {
+    const want = process.env.AI_HEAVY.trim().toLowerCase()
+    const first = usable.find((p) => p.name === want)
+    if (first) return [first, ...usable.filter((p) => p !== first)]
+  }
+
+  // 優先順の指定があれば、その並びにします
+  let list = usable
+  if (process.env.AI_ORDER) {
+    const names = process.env.AI_ORDER.split(',').map((x) => x.trim().toLowerCase())
+    const sorted = []
+    for (const n of names) {
+      const hit = usable.find((p) => p.name === n)
+      if (hit && !sorted.includes(hit)) sorted.push(hit)
+    }
+    // 指定に漏れたものは後ろに付けます
+    list = [...sorted, ...usable.filter((p) => !sorted.includes(p))]
+  }
+
+  // 交互利用：呼び出しごとに先頭をずらします
+  if (process.env.AI_ROTATE === '1') {
+    const shift = rotateCount++ % list.length
+    list = [...list.slice(shift), ...list.slice(0, shift)]
+  }
+
+  return list
+}
+
+/** いまの設定を確認用に返します */
+export function providerSettings() {
+  return {
+    order: process.env.AI_ORDER || '（既定：Groq→Gemini→OpenAI→Claude）',
+    rotate: process.env.AI_ROTATE === '1',
+    heavy: process.env.AI_HEAVY || '',
+    next: orderedProviders().map((p) => p.label),
+  }
 }
 
 /** 使えるプロバイダを、モデル名付きで返します */
@@ -162,8 +215,9 @@ async function callAnthropic(key, model, system, messages, maxTokens) {
  * 戻り値： { text, provider, model }
  * 失敗時： { error: 'NO_KEY' | 'ALL_FAILED', detail }
  */
-export async function askProviders(system, messages, { maxTokens = 900, json = false } = {}) {
+export async function askProviders(system, messages, { maxTokens = 900, json = false, heavy = false } = {}) {
   const errors = []
+  const list = orderedProviders(heavy)
 
   /** 1つのプロバイダを、指定のモデルで呼ぶ */
   const call = async (p, key, useJson, model) => {
@@ -174,7 +228,7 @@ export async function askProviders(system, messages, { maxTokens = 900, json = f
     return callAnthropic(key, m, system, messages, maxTokens)
   }
 
-  for (const p of PROVIDERS) {
+  for (const p of list) {
     const key = process.env[p.envKey]
     if (!key) continue
 

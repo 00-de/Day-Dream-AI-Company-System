@@ -182,7 +182,8 @@ export default async function handler(req, res) {
           content: `依頼：${request.trim()}\n\n【検索して集めた情報】\n${formatForAi(groups).slice(0, 9000)}`,
         },
       ],
-      { maxTokens: 2500, json: true },
+      { maxTokens: 2500,
+      heavy: true, json: true },
     )
 
     if (work.error) {

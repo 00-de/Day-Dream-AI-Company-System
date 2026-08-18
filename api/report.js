@@ -71,6 +71,7 @@ export default async function handler(req, res) {
 
     const result = await askProviders(system, [{ role: 'user', content: `【実績データ】\n${activityText.slice(0, 6000)}` }], {
       maxTokens: 2200,
+      heavy: true,
       json: true,
     })
 

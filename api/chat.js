@@ -6,7 +6,13 @@
    ブラウザには絶対に出ないので、VITE_ 接頭辞は付けないでください。
    ============================================================ */
 
-import { askProviders, availableProviders, availableProviderDetails, buildContext } from './_provider.js'
+import {
+  askProviders,
+  availableProviders,
+  availableProviderDetails,
+  providerSettings,
+  buildContext,
+} from './_provider.js'
 
 /** AIへの指示文をつくる */
 function buildSystemPrompt(ctx, persona) {
@@ -38,6 +44,7 @@ export default async function handler(req, res) {
       ok: true,
       available: availableProviders(),
       details: availableProviderDetails(),
+      settings: providerSettings(),
     })
   }
 
