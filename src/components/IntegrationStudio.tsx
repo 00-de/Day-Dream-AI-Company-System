@@ -10,7 +10,7 @@ import {
   downloadText,
   type CraftKind,
 } from '../lib/integrations'
-import { Panel, ACCENT, StateBadge, ProgressBar } from './Ui'
+import { Panel, ACCENT, StateBadge, ProgressBar, OwnerBadge } from './Ui'
 import { IconSparkle, IconArrow, IconCheck } from './Icons'
 
 /* ============================================================
@@ -20,11 +20,11 @@ import { IconSparkle, IconArrow, IconCheck } from './Icons'
    コピーしてサービスを開くところまで一気に進めます。
    ============================================================ */
 
-const KINDS: { kind: CraftKind; label: string; service: string; hint: string }[] = [
-  { kind: 'music', label: '楽曲を作る', service: 'suno', hint: '例：夏の海で全力疾走するような明るいロック' },
-  { kind: 'image', label: '画像を作る', service: 'genspark', hint: '例：夜のステージで5人が演奏している縦長の画像' },
-  { kind: 'video', label: 'MVを編集する', service: 'capcut', hint: '例：「みんな笑顔になれ」のMV構成を考えたい' },
-  { kind: 'lyrics', label: '歌詞を作る', service: 'suno', hint: '例：母への感謝を伝えるバラード' },
+const KINDS: { kind: CraftKind; label: string; service: string; hint: string; owner: string }[] = [
+  { kind: 'music', label: '楽曲を作る', service: 'suno', hint: '例：夏の海で全力疾走するような明るいロック', owner: 'ren' },
+  { kind: 'image', label: '画像を作る', service: 'genspark', hint: '例：夜のステージで5人が演奏している縦長の画像', owner: 'designer' },
+  { kind: 'video', label: 'MVを編集する', service: 'capcut', hint: '例：「みんな笑顔になれ」のMV構成を考えたい', owner: 'shun' },
+  { kind: 'lyrics', label: '歌詞を作る', service: 'suno', hint: '例：母への感謝を伝えるバラード', owner: 'yui' },
 ]
 
 /** 結果の1項目を表示する（コピーボタン付き） */
@@ -71,6 +71,8 @@ export function IntegrationStudio() {
   const [copiedAll, setCopiedAll] = useState(false)
 
   const active = KINDS.find((k) => k.kind === kind)!
+  // 選んだ種類の担当AI社員
+  const ownerStaff = data.staff.find((s) => s.id === active.owner)
   const service = SERVICES.find((s) => s.id === active.service)!
 
   useEffect(() => {
@@ -171,7 +173,19 @@ export function IntegrationStudio() {
     <Panel
       title="外部サービス連携"
       className="scroll-mt-20"
-      action={provider ? <StateBadge text={`${provider} が作成`} /> : undefined}
+      action={
+        <span className="flex items-center gap-1.5">
+          {ownerStaff && (
+            <OwnerBadge
+              name={ownerStaff.name}
+              role={ownerStaff.role}
+              accent={ownerStaff.accent}
+              avatar={ownerStaff.avatar}
+            />
+          )}
+          {provider && <StateBadge text={`${provider} が作成`} />}
+        </span>
+      }
     >
       <div id="integration" />
 

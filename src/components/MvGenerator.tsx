@@ -15,7 +15,7 @@ import {
   type Shot,
 } from '../lib/stability'
 import { uploadFile } from '../lib/storage'
-import { Panel, ProgressBar, StateBadge, MoreLink } from './Ui'
+import { Panel, ProgressBar, StateBadge, OwnerBadge } from './Ui'
 import { IconSparkle, IconFilm, IconCheck } from './Icons'
 
 /* ============================================================
@@ -36,6 +36,7 @@ export function MvGenerator() {
   const { data } = useData()
   const { addMedia } = useLibrary()
   const { account } = useAuth()
+  const aya = data.staff.find((s) => s.id === 'designer')
 
   const [phase, setPhase] = useState<Phase>('setup')
   const [title, setTitle] = useState('')
@@ -223,7 +224,9 @@ export function MvGenerator() {
       title="MV画像 一括生成（Stability AI）"
       className="scroll-mt-20"
       action={
-        configured === null ? (
+        <span className="flex items-center gap-1.5">
+        {aya && <OwnerBadge name={aya.name} role={aya.role} accent={aya.accent} avatar={aya.avatar} />}
+        {configured === null ? (
           <span className="text-[9px] text-slate-500">確認中…</span>
         ) : configured ? (
           <span className="flex items-center gap-1.5">
@@ -234,7 +237,8 @@ export function MvGenerator() {
           </span>
         ) : (
           <StateBadge text="APIキー未設定" tone="warn" />
-        )
+        )}
+        </span>
       }
     >
       <div id="mvgen" />

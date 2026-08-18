@@ -45,7 +45,7 @@ export const DEFAULT_DATA: AppData = {
     system: 'DayDream AI Company System',
     subtitle: 'AI社員23人体制 統合ダッシュボード',
     presidentName: 'トシさん',
-    version: 'v2.6.2',
+    version: 'v2.7.0',
   },
 
   finance: {

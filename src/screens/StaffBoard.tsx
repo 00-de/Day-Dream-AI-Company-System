@@ -10,6 +10,7 @@ import { Donut } from '../components/Charts'
 import { IconCheck } from '../components/Icons'
 import { AgentPanel } from '../components/AgentPanel'
 import { SnsPanel, CheckPanel } from '../components/StaffWorkPanel'
+import { ReportPanel, DevPanel } from '../components/LeadWorkPanel'
 
 /* ============================================================
    AI社員ボード
@@ -71,6 +72,11 @@ export function StaffBoard() {
     <div className="space-y-3">
       {/* AI社員に実際の仕事を頼む */}
       <AgentPanel />
+
+      <div className="layout-grid grid grid-cols-1 xl:grid-cols-2 gap-3">
+        <ReportPanel />
+        <DevPanel />
+      </div>
 
       <div className="layout-grid grid grid-cols-1 xl:grid-cols-2 gap-3">
         <SnsPanel onSendToCheck={setToCheck} />

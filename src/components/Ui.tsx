@@ -123,3 +123,47 @@ export function Metric({
     </div>
   )
 }
+
+
+/** パネルの担当AI社員を示すバッジ（既存機能との紐づけ表示） */
+export function OwnerBadge({
+  name,
+  role,
+  accent = 'cyan',
+  avatar,
+}: {
+  name: string
+  role?: string
+  accent?: keyof typeof ACCENT
+  avatar?: string
+}) {
+  const a = ACCENT[accent]
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg"
+      style={{ boxShadow: `0 0 0 1px ${a.hex}44`, background: `${a.hex}12` }}
+      title={role ? `${name}（${role}）が担当します` : name}
+    >
+      {avatar ? (
+        <img
+          src={avatar}
+          alt=""
+          width={18}
+          height={18}
+          className="rounded object-cover"
+          onError={(e) => {
+            const el = e.currentTarget
+            if (!el.dataset.fallback) {
+              el.dataset.fallback = '1'
+              el.src = avatar.replace(/\.(png|jpg|jpeg|webp)$/i, '.svg')
+            } else {
+              el.style.display = 'none'
+            }
+          }}
+        />
+      ) : null}
+      <span className={`text-[10px] ${a.text}`}>{name}</span>
+      <span className="text-[9px] text-slate-500">担当</span>
+    </span>
+  )
+}

@@ -6,7 +6,7 @@ import { IntegrationStudio } from '../components/IntegrationStudio'
 import { MvGenerator } from '../components/MvGenerator'
 import { copyText, openService, SERVICES } from '../lib/integrations'
 import { formatSize } from '../lib/storage'
-import { Panel, MoreLink, ProgressBar, ACCENT } from '../components/Ui'
+import { Panel, MoreLink, ProgressBar, ACCENT, OwnerBadge } from '../components/Ui'
 import { Donut, Sparkline, Waveform } from '../components/Charts'
 import {
   IconPlay,
@@ -72,6 +72,11 @@ function Thumb({ src, label, ratio = 'aspect-video' }: { src?: string; label?: s
 
 export function Studio() {
   const { data } = useData()
+  /** 担当AI社員を探します（既存機能との紐づけ） */
+  const owner = (id: string) => {
+    const st = data.staff.find((s) => s.id === id)
+    return st ? <OwnerBadge name={st.name} role={st.role} accent={st.accent} avatar={st.avatar} /> : null
+  }
   const { media } = useLibrary()
   const images = media.filter((m) => m.kind === 'image')
   const videos = media.filter((m) => m.kind === 'video')
@@ -134,7 +139,7 @@ export function Studio() {
         <Panel
           title="音楽制作"
           className="scroll-mt-20 2xl:col-span-1"
-          action={<MoreLink label="楽曲管理" />}
+          action={owner('ren')}
         >
           <div id="music" />
           <div className="flex gap-1.5 mb-3">
@@ -213,7 +218,7 @@ export function Studio() {
         </Panel>
 
         {/* ── 画像生成 ───────────────────────────── */}
-        <Panel title="画像生成（Genspark連携）" className="scroll-mt-20" action={<MoreLink />}>
+        <Panel title="画像生成（Genspark連携）" className="scroll-mt-20" action={owner('designer')}>
           <div id="image" />
           <div className="flex gap-1.5 mb-3">
             {([
@@ -271,7 +276,7 @@ export function Studio() {
         </Panel>
 
         {/* ── MV制作 ─────────────────────────────── */}
-        <Panel title="MV制作（CapCut連携）" className="scroll-mt-20" action={<MoreLink />}>
+        <Panel title="MV制作（CapCut連携）" className="scroll-mt-20" action={owner('shun')}>
           <div id="mv" />
           <div className="relative">
             {videos[0] ? (
@@ -305,7 +310,7 @@ export function Studio() {
         </Panel>
 
         {/* ── ライブ管理 ─────────────────────────── */}
-        <Panel title="ライブ管理" className="scroll-mt-20" action={<MoreLink label="詳細を見る" />}>
+        <Panel title="ライブ管理" className="scroll-mt-20" action={owner('ota')}>
           <div id="live" />
           <p className="text-[10px] text-slate-400">次回ライブ：{NEXT_LIVE.date}</p>
           <p className="text-[14px] font-bold text-slate-100 mt-0.5">{NEXT_LIVE.title}</p>
@@ -347,7 +352,7 @@ export function Studio() {
         </Panel>
 
         {/* ── YouTube管理 ────────────────────────── */}
-        <Panel title="YouTube管理" className="scroll-mt-20" action={<MoreLink label="動画一覧" />}>
+        <Panel title="YouTube管理" className="scroll-mt-20" action={owner('aoi')}>
           <div id="youtube" />
           <div className="inner-grid grid grid-cols-3 gap-2 text-center">
             {[
@@ -381,7 +386,7 @@ export function Studio() {
         </Panel>
 
         {/* ── ファイル管理 ───────────────────────── */}
-        <Panel title="ファイル管理" className="scroll-mt-20" action={<MoreLink label="バックアップ設定" />}>
+        <Panel title="ファイル管理" className="scroll-mt-20" action={owner('cloud')}>
           <div id="files" />
           <div className="inner-grid grid grid-cols-4 gap-2 mb-3">
             {KIND_SUMMARY.map((k) => (
