@@ -1,7 +1,7 @@
 {
   "name": "daydream-ai-company-system",
   "private": true,
-  "version": "2.3.0",
+  "version": "2.4.0",
   "type": "module",
   "description": "DayDream AI Company System - 社長1人 + AI社員による統合経営・制作ダッシュボード",
   "scripts": {

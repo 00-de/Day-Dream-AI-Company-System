@@ -5,6 +5,7 @@ import { Dashboard } from './screens/Dashboard'
 import { Studio } from './screens/Studio'
 import { MeetingRoom } from './screens/MeetingRoom'
 import { StaffBoard } from './screens/StaffBoard'
+import { ProgressBoard } from './screens/ProgressBoard'
 import { Drawer } from './components/Drawer'
 import { EditDrawer } from './components/EditDrawer'
 import { Login } from './components/Login'
@@ -75,6 +76,7 @@ function Main() {
           {screen === 'management' && <Dashboard onGoStudio={() => setScreen('studio')} />}
           {screen === 'studio' && <Studio />}
           {screen === 'staff' && <StaffBoard />}
+          {screen === 'progress' && <ProgressBoard />}
           {screen === 'meeting' && <MeetingRoom />}
         </main>
 
