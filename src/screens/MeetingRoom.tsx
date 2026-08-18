@@ -3,11 +3,11 @@ import type { AiStaff, Meeting, MeetingTurn, HumanOpinion, StaffOpinion } from '
 import { useData } from '../lib/data'
 import { useLibrary } from '../lib/library'
 import { useAuth } from '../lib/auth'
-import { holdMeeting, collectOpinions } from '../lib/meeting'
+import { holdMeeting, collectOpinions, sendMeetingMessage, type Speech } from '../lib/meeting'
 import { Panel, ACCENT, StateBadge, MoreLink } from '../components/Ui'
 import { Avatar } from '../components/Avatar'
 import { HUMANS } from '../data/humans'
-import { IconCheck, IconUsers, IconSparkle } from '../components/Icons'
+import { IconCheck, IconUsers, IconSparkle, IconSend } from '../components/Icons'
 
 /* ============================================================
    AI会議ルーム
@@ -46,6 +46,11 @@ export function MeetingRoom() {
   const [staffOpinions, setStaffOpinions] = useState<StaffOpinion[]>([])
   const [collecting, setCollecting] = useState(false)
   const [opinionFilter, setOpinionFilter] = useState<'all' | 'concern'>('all')
+  // 同時に発言する人（最大3人）と、それぞれの発言内容
+  const [chatWho, setChatWho] = useState<string[]>([HUMANS[0].id])
+  const [chatTexts, setChatTexts] = useState<Record<string, string>>({})
+  const [chatBusy, setChatBusy] = useState(false)
+  const [replyCount, setReplyCount] = useState(2)
   const logRef = useRef<HTMLDivElement>(null)
 
   const staffOf = (id: string) => data.staff.find((s) => s.id === id)
@@ -140,6 +145,56 @@ export function MeetingRoom() {
       priority,
     })
     setAddedTasks((list) => [...list, title])
+  }
+
+  /** 発言する人を選ぶ（最大3人） */
+  const toggleSpeaker = (id: string) =>
+    setChatWho((list) =>
+      list.includes(id) ? list.filter((x) => x !== id) : [...list, id].slice(-3),
+    )
+
+  /** 会議中に発言する（AI社員がその場で返します） */
+  const speak = async () => {
+    if (!current || chatBusy) return
+
+    // 選んだ人の発言をまとめます（空欄の人は飛ばします）
+    const speeches: Speech[] = chatWho
+      .map((id) => HUMANS.find((h) => h.id === id))
+      .filter((h): h is (typeof HUMANS)[number] => Boolean(h))
+      .map((h) => ({ name: h.name, title: h.title, text: (chatTexts[h.id] ?? '').trim() }))
+      .filter((sp) => sp.text)
+
+    if (speeches.length === 0) return
+
+    // まず全員の発言を会議ログに追加します
+    const mine: MeetingTurn[] = speeches.map((sp) => ({
+      speaker: sp.name,
+      text: sp.text,
+      human: true,
+      title: sp.title,
+    }))
+    const withMine = { ...current, turns: [...current.turns, ...mine] }
+    setCurrent(withMine)
+    setShownTurns(withMine.turns.length)
+    setChatTexts({})
+    setChatBusy(true)
+
+    const r = await sendMeetingMessage(
+      current.topic,
+      participants,
+      withMine.turns,
+      speeches,
+      data,
+      replyCount,
+    )
+
+    const next = { ...withMine, turns: [...withMine.turns, ...r.replies] }
+    setCurrent(next)
+    setShownTurns(next.turns.length)
+
+    // 会議記録にも残します
+    if (account.canEdit) await updateMeeting(current.id, { turns: next.turns })
+    setChatBusy(false)
   }
 
   /** 会議に参加していない社員から意見を集める */
@@ -479,6 +534,46 @@ export function MeetingRoom() {
               })}
 
             {visibleTurns.map((turn, i) => {
+              // 人間の発言は、右寄せの色付きで表示します
+              if (turn.human) {
+                const h = HUMANS.find((x) => x.name === turn.speaker)
+                const hAccent = h?.accent ?? 'cyan'
+                return (
+                  <div key={i} className="flex gap-2.5 justify-end animate-floatUp">
+                    <div className="min-w-0 max-w-[85%]">
+                      <p className="flex items-baseline gap-2 justify-end">
+                        <span className="text-[8px] px-1.5 py-[1px] rounded bg-white/10 text-slate-400">
+                          人間
+                        </span>
+                        {turn.title && <span className="text-[9px] text-slate-600">{turn.title}</span>}
+                        <span className={`text-[11px] font-bold ${ACCENT[hAccent].text}`}>
+                          {turn.speaker}
+                        </span>
+                      </p>
+                      <div
+                        className="mt-1 rounded-xl px-3 py-2 text-[12px] text-slate-50 leading-relaxed whitespace-pre-wrap"
+                        style={{
+                          background: `${ACCENT[hAccent].hex}22`,
+                          boxShadow: `0 0 0 1px ${ACCENT[hAccent].hex}55`,
+                        }}
+                      >
+                        {turn.text}
+                      </div>
+                    </div>
+                    <div
+                      className="w-[34px] h-[34px] shrink-0 rounded-xl grid place-content-center text-[13px] font-bold"
+                      style={{
+                        color: ACCENT[hAccent].hex,
+                        background: `${ACCENT[hAccent].hex}22`,
+                        boxShadow: `0 0 0 1px ${ACCENT[hAccent].hex}55`,
+                      }}
+                    >
+                      人
+                    </div>
+                  </div>
+                )
+              }
+
               const st = speakerOf(turn.speaker)
               const accent = st?.accent ?? 'cyan'
               return (
@@ -500,7 +595,106 @@ export function MeetingRoom() {
             {current && !finished && (
               <p className="text-[11px] text-slate-500 pl-11">次の発言を待っています…</p>
             )}
+
+            {chatBusy && (
+              <p className="text-[11px] text-cyan-300 pl-11 animate-pulseDot">AI社員が答えています…</p>
+            )}
           </div>
+
+          {/* 会議中の発言欄 */}
+          {current && finished && account.canEdit && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              {/* 発言する人を選ぶ（最大3人） */}
+              <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                <span className="text-[10px] text-slate-500 mr-0.5">発言する人</span>
+                {HUMANS.map((h) => {
+                  const on = chatWho.includes(h.id)
+                  return (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => toggleSpeaker(h.id)}
+                      className={`text-[10px] px-2 py-1 rounded-md transition ${
+                        on
+                          ? 'ring-1 bg-white/[0.06]'
+                          : 'text-slate-500 ring-1 ring-white/10 hover:text-slate-200'
+                      }`}
+                      style={
+                        on
+                          ? { color: ACCENT[h.accent].hex, boxShadow: `0 0 0 1px ${ACCENT[h.accent].hex}66` }
+                          : undefined
+                      }
+                    >
+                      {h.name}
+                    </button>
+                  )
+                })}
+                <span className="text-[9px] text-slate-600">最大3人</span>
+                <select
+                  value={replyCount}
+                  onChange={(e) => setReplyCount(Number(e.target.value))}
+                  aria-label="返答するAI社員の人数"
+                  className="ml-auto bg-night-950/70 rounded-lg px-2 py-1.5 text-[10px] text-slate-300 ring-1 ring-white/10 outline-none"
+                >
+                  {[1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      {n}人が返答
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 選んだ人ごとの入力欄 */}
+              <div className="space-y-2">
+                {chatWho.length === 0 && (
+                  <p className="text-[10px] text-slate-600 text-center py-2">
+                    発言する人を選んでください
+                  </p>
+                )}
+                {chatWho.map((id) => {
+                  const h = HUMANS.find((x) => x.id === id)
+                  if (!h) return null
+                  return (
+                    <div key={id} className="flex gap-2 items-start">
+                      <span
+                        className="w-16 shrink-0 text-[10px] pt-2 truncate"
+                        style={{ color: ACCENT[h.accent].hex }}
+                        title={`${h.name}（${h.title}）`}
+                      >
+                        {h.name}
+                      </span>
+                      <textarea
+                        value={chatTexts[id] ?? ''}
+                        onChange={(e) => setChatTexts((t) => ({ ...t, [id]: e.target.value }))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) void speak()
+                        }}
+                        rows={2}
+                        disabled={chatBusy}
+                        placeholder={`${h.name}の発言（${h.viewpoint}）`}
+                        aria-label={`${h.name}の発言`}
+                        className="flex-1 bg-night-950/70 rounded-lg px-3 py-2 text-[12px] text-slate-100 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none resize-none disabled:opacity-50"
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => void speak()}
+                disabled={chatBusy || !chatWho.some((id) => (chatTexts[id] ?? '').trim())}
+                className="mt-2 w-full py-2.5 rounded-lg text-[12px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition flex items-center justify-center gap-1.5"
+              >
+                <IconSend className="w-4 h-4" />
+                {chatBusy ? 'AI社員が答えています…' : '発言する（Ctrl+Enter）'}
+              </button>
+              <p className="mt-1 text-[9px] text-slate-600">
+                複数人で発言すると、AI社員が全員の意見に触れて答えます。
+                意見が食い違う場合は、その違いを整理して折り合いのつけ方を示します。
+              </p>
+            </div>
+          )}
 
           {current && !finished && (
             <button
@@ -748,6 +942,11 @@ export function MeetingRoom() {
               <IconSparkle className="w-3.5 h-3.5 text-cyan-300 shrink-0 mt-0.5" />
               人間メンバー（小林さん・高木さん・太田さん・中尾さん・シュンさん）の意見を先に入れると、
               AI社員がそれに名前を挙げて応答します
+            </li>
+            <li className="flex gap-2">
+              <IconSparkle className="w-3.5 h-3.5 text-cyan-300 shrink-0 mt-0.5" />
+              会議が終わったあとも、下の入力欄から発言できます。
+              関係の深い担当のAI社員がその場で答えます
             </li>
           </ul>
           <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">

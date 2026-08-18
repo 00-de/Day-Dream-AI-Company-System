@@ -202,3 +202,71 @@ export function offlineOpinions(members: AiStaff[]): OpinionsResult {
     provider: 'オフライン生成',
   }
 }
+
+
+/* ============================================================
+   会議中の発言（人間が話しかけて、AI社員が返します）
+   ============================================================ */
+
+export interface ChatReply {
+  replies: MeetingTurn[]
+  provider: string
+  error?: string
+  detail?: string
+}
+
+/** 1人分の発言 */
+export interface Speech {
+  name: string
+  title: string
+  text: string
+}
+
+export async function sendMeetingMessage(
+  topic: string,
+  participants: AiStaff[],
+  history: MeetingTurn[],
+  speeches: Speech[],
+  data: AppData,
+  replyCount = 2,
+): Promise<ChatReply> {
+  try {
+    const res = await fetch('/api/meetingchat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        participants: participants.map((p) => ({ name: p.name, role: p.role })),
+        history: history.map((t) => ({ speaker: t.speaker, text: t.text, human: t.human })),
+        messages: speeches,
+        replyCount,
+        context: buildContext(data),
+      }),
+    })
+
+    if (res.ok) {
+      const json = (await res.json()) as { replies: MeetingTurn[]; provider: string }
+      return { replies: json.replies, provider: json.provider }
+    }
+
+    const err = (await res.json().catch(() => null)) as { error?: string; detail?: string } | null
+    // AIに繋がらないときは、担当に応じた簡易応答を返します
+    return {
+      replies: participants.slice(0, replyCount).map((p) => ({
+        speaker: p.name,
+        text: `${p.role}の立場として承知しました。${speeches
+          .map((sp) => `${sp.name}のご発言「${sp.text.slice(0, 24)}」`)
+          .join('、')}の件、担当範囲で対応を検討します。※AIに接続できていないため簡易応答です。`,
+      })),
+      provider: 'オフライン応答',
+      error: err?.error,
+      detail: err?.detail,
+    }
+  } catch {
+    return {
+      replies: [],
+      provider: '',
+      error: '通信に失敗しました',
+    }
+  }
+}
