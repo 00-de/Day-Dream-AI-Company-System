@@ -46,7 +46,11 @@ export async function checkAiStatus(): Promise<string[]> {
   try {
     const res = await fetch('/api/chat', { method: 'GET' })
     if (!res.ok) return []
-    const json = (await res.json()) as { available?: string[] }
+    const json = (await res.json()) as { available?: string[]; details?: { label: string; model: string }[] }
+    // モデル名も分かる場合は「Gemini（gemini-3.6-flash）」の形で返します
+    if (json.details && json.details.length > 0) {
+      return json.details.map((d) => `${d.label}（${d.model}）`)
+    }
     return json.available ?? []
   } catch {
     return []

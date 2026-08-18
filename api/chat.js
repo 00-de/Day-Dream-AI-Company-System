@@ -6,7 +6,7 @@
    ブラウザには絶対に出ないので、VITE_ 接頭辞は付けないでください。
    ============================================================ */
 
-import { askProviders, availableProviders, buildContext } from './_provider.js'
+import { askProviders, availableProviders, availableProviderDetails, buildContext } from './_provider.js'
 
 /** AIへの指示文をつくる */
 function buildSystemPrompt(ctx, persona) {
@@ -34,7 +34,11 @@ function buildSystemPrompt(ctx, persona) {
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     // 設定確認用：どのAIが使える状態かを返します（キーの中身は返しません）
-    return res.status(200).json({ ok: true, available: availableProviders() })
+    return res.status(200).json({
+      ok: true,
+      available: availableProviders(),
+      details: availableProviderDetails(),
+    })
   }
 
   if (req.method !== 'POST') {
@@ -64,7 +68,12 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'AIへの接続に失敗しました', detail: result.detail, code: 'ALL_FAILED' })
     }
 
-    return res.status(200).json({ reply: result.text, provider: result.provider, model: result.model })
+    return res.status(200).json({
+      reply: result.text,
+      provider: result.provider,
+      model: result.model,
+      switched: result.switched ?? false,
+    })
   } catch (e) {
     return res.status(500).json({ error: 'サーバー内部エラー', detail: String(e?.message || e) })
   }

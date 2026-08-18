@@ -17,7 +17,7 @@ export const PROVIDERS = [
     name: 'gemini',
     label: 'Gemini',
     envKey: 'GEMINI_API_KEY',
-    model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+    model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
   },
   {
     name: 'openai',
@@ -33,9 +33,36 @@ export const PROVIDERS = [
   },
 ]
 
+/**
+ * エラー文から「代わりに使うモデル名」を読み取ります
+ * Googleは提供終了時に「Please update your code to use models/xxx」と教えてくれます
+ */
+export function findSuggestedModel(message) {
+  const m = String(message || '')
+  // models/gemini-3.6-flash のような書き方を探します
+  const byPath = m.match(/models\/([a-zA-Z0-9._-]+)/g)
+  if (byPath) {
+    for (const hit of byPath) {
+      const name = hit.replace('models/', '')
+      // エラーの原因になったモデル自身は除きます
+      if (!m.includes(`This model models/${name} is no longer`)) return name
+    }
+  }
+  return null
+}
+
 /** 使える状態のプロバイダ名を返す */
 export function availableProviders() {
   return PROVIDERS.filter((p) => Boolean(process.env[p.envKey])).map((p) => p.label)
+}
+
+/** 使えるプロバイダを、モデル名付きで返します */
+export function availableProviderDetails() {
+  return PROVIDERS.filter((p) => Boolean(process.env[p.envKey])).map((p) => ({
+    label: p.label,
+    model: p.model,
+    envKey: p.envKey,
+  }))
 }
 
 async function callGroq(key, model, system, messages, maxTokens, json) {
@@ -138,12 +165,13 @@ async function callAnthropic(key, model, system, messages, maxTokens) {
 export async function askProviders(system, messages, { maxTokens = 900, json = false } = {}) {
   const errors = []
 
-  /** 1つのプロバイダを呼ぶ */
-  const call = async (p, key, useJson) => {
-    if (p.name === 'groq') return callGroq(key, p.model, system, messages, maxTokens, useJson)
-    if (p.name === 'gemini') return callGemini(key, p.model, system, messages, maxTokens, useJson)
-    if (p.name === 'openai') return callOpenAI(key, p.model, system, messages, maxTokens, useJson)
-    return callAnthropic(key, p.model, system, messages, maxTokens)
+  /** 1つのプロバイダを、指定のモデルで呼ぶ */
+  const call = async (p, key, useJson, model) => {
+    const m = model || p.model
+    if (p.name === 'groq') return callGroq(key, m, system, messages, maxTokens, useJson)
+    if (p.name === 'gemini') return callGemini(key, m, system, messages, maxTokens, useJson)
+    if (p.name === 'openai') return callOpenAI(key, m, system, messages, maxTokens, useJson)
+    return callAnthropic(key, m, system, messages, maxTokens)
   }
 
   for (const p of PROVIDERS) {
@@ -156,13 +184,34 @@ export async function askProviders(system, messages, { maxTokens = 900, json = f
     } catch (e) {
       errors.push(`${p.label}: ${e.message}`)
 
-      // JSON形式の指定に対応していないモデルがあるため、外してもう一度試します
+      // ① モデルが提供終了していたら、案内された後継モデルで試します
+      const suggested = findSuggestedModel(e.message)
+      if (suggested && suggested !== p.model) {
+        try {
+          const text = await call(p, key, json, suggested)
+          return { text, provider: p.label, model: suggested, switched: true }
+        } catch (e2) {
+          errors.push(`${p.label}(${suggested}): ${e2.message}`)
+
+          // 後継モデルでもJSON指定が通らない場合
+          if (json) {
+            try {
+              const text = await call(p, key, false, suggested)
+              return { text, provider: p.label, model: suggested, switched: true }
+            } catch (e3) {
+              errors.push(`${p.label}(${suggested}/JSON指定なし): ${e3.message}`)
+            }
+          }
+        }
+      }
+
+      // ② JSON形式の指定に対応していないモデルがあるため、外して試します
       if (json) {
         try {
           const text = await call(p, key, false)
           return { text, provider: p.label, model: p.model }
-        } catch (e2) {
-          errors.push(`${p.label}(JSON指定なし): ${e2.message}`)
+        } catch (e4) {
+          errors.push(`${p.label}(JSON指定なし): ${e4.message}`)
         }
       }
     }
