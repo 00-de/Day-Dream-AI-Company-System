@@ -103,8 +103,11 @@ export default async function handler(req, res) {
       .filter(Boolean)
       .join('\n')
 
-    const result = await askProviders(system, [{ role: 'user', content: userMessage }], {
-      maxTokens: 2400,
+    // 発言数に応じて必要な出力量を見積もります（足りないとJSONが途中で切れます）
+    const needTokens = Math.min(8000, 1200 + participants.length * safeRounds * 260)
+
+    let result = await askProviders(system, [{ role: 'user', content: userMessage }], {
+      maxTokens: needTokens,
       heavy: true,
       json: true,
     })
@@ -116,11 +119,26 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'AIへの接続に失敗しました', detail: result.detail, code: 'ALL_FAILED' })
     }
 
-    const parsed = parseJson(result.text)
+    let parsed = parseJson(result.text)
+
+    // JSONが途中で切れた場合は、発言を短くして1回だけ作り直します
+    if (!parsed || !Array.isArray(parsed.turns)) {
+      const retry = await askProviders(
+        system + '\n\n※ 各発言は必ず2文以内にして、JSON全体が途中で切れないようにしてください。',
+        [{ role: 'user', content: userMessage }],
+        { maxTokens: needTokens, heavy: true, json: false },
+      )
+      if (!retry.error) {
+        result = retry
+        parsed = parseJson(retry.text)
+      }
+    }
+
     if (!parsed || !Array.isArray(parsed.turns)) {
       return res.status(502).json({
         error: 'AIの回答を読み取れませんでした',
-        detail: 'もう一度お試しください。',
+        // 実際に返ってきた内容の先頭を返します（原因調べ用）
+        detail: `AIの返答（先頭400字）：${String(result.text || '').slice(0, 400)}`,
         code: 'BAD_FORMAT',
       })
     }

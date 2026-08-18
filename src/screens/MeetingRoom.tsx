@@ -38,6 +38,7 @@ export function MeetingRoom() {
   const [current, setCurrent] = useState<Meeting | null>(null)
   const [shownTurns, setShownTurns] = useState(0)
   const [error, setError] = useState('')
+  const [detail, setDetail] = useState('')
   const [addedTasks, setAddedTasks] = useState<string[]>([])
   const [opinions, setOpinions] = useState<HumanOpinion[]>([])
   const [whoId, setWhoId] = useState(HUMANS[0].id)
@@ -98,8 +99,18 @@ export function MeetingRoom() {
 
     if (result.turns.length === 0) {
       setError('会議を開けませんでした。もう一度お試しください。')
+      setDetail(result.detail ?? '')
       setRunning(false)
       return
+    }
+
+    // AIに繋がらず簡易生成になった場合は、理由を表示します
+    if (result.provider === 'オフライン生成') {
+      setError(result.error ?? 'AIに接続できなかったため、簡易生成の議事録になっています。')
+      setDetail(result.detail ?? '')
+    } else {
+      setError('')
+      setDetail('')
     }
 
     const saved = await addMeeting({
@@ -344,9 +355,19 @@ export function MeetingRoom() {
           <p className="text-[10px] text-amber-300/80 text-center">AI社員を2人以上選んでください</p>
         )}
         {error && (
-          <p className="text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2">
-            {error}
-          </p>
+          <div className="text-[11px] text-amber-300 bg-amber-400/10 ring-1 ring-amber-400/30 rounded-lg px-3 py-2">
+            <p>{error}</p>
+            {detail && (
+              <details className="mt-1.5">
+                <summary className="text-[10px] text-amber-400/80 cursor-pointer">
+                  詳しい内容を見る（原因を調べるとき用）
+                </summary>
+                <pre className="mt-1 text-[9px] text-slate-400 whitespace-pre-wrap break-all leading-relaxed">
+                  {detail}
+                </pre>
+              </details>
+            )}
+          </div>
         )}
       </div>
 

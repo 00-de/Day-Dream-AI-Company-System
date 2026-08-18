@@ -15,6 +15,8 @@ export interface MeetingResult {
   offline: boolean
   /** 失敗した場合のメッセージ */
   error?: string
+  /** 失敗したときの詳しい内容（原因調べ用） */
+  detail?: string
 }
 
 /** 会議を開く */
@@ -45,10 +47,11 @@ export async function holdMeeting(
       return { ...json, offline: false }
     }
 
-    const err = (await res.json().catch(() => null)) as { error?: string } | null
+    const err = (await res.json().catch(() => null)) as { error?: string; detail?: string } | null
     return {
       ...offlineMeeting(topic, note, participants, data, rounds, humanOpinions),
       error: err?.error ?? undefined,
+      detail: err?.detail,
     }
   } catch {
     return offlineMeeting(topic, note, participants, data, rounds, humanOpinions)
@@ -153,6 +156,7 @@ export interface OpinionsResult {
   opinions: StaffOpinion[]
   provider: string
   error?: string
+  detail?: string
 }
 
 export async function collectOpinions(
@@ -179,8 +183,8 @@ export async function collectOpinions(
 
     if (res.ok) return (await res.json()) as OpinionsResult
 
-    const err = (await res.json().catch(() => null)) as { error?: string } | null
-    return { ...offlineOpinions(members), error: err?.error ?? undefined }
+    const err = (await res.json().catch(() => null)) as { error?: string; detail?: string } | null
+    return { ...offlineOpinions(members), error: err?.error ?? undefined, detail: err?.detail }
   } catch {
     return offlineOpinions(members)
   }
