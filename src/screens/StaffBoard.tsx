@@ -8,6 +8,7 @@ import { Panel, ProgressBar, ACCENT, StatusDot, StateBadge } from '../components
 import { Avatar } from '../components/Avatar'
 import { Donut } from '../components/Charts'
 import { IconCheck } from '../components/Icons'
+import { AgentPanel } from '../components/AgentPanel'
 
 /* ============================================================
    AI社員ボード
@@ -66,6 +67,9 @@ export function StaffBoard() {
 
   return (
     <div className="space-y-3">
+      {/* AI社員に実際の仕事を頼む */}
+      <AgentPanel />
+
       {/* 全体のようす */}
       <div className="layout-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Panel title="AI社員の稼働">
