@@ -39,7 +39,7 @@ export interface Storyboard {
 /** 設定状況を確認する */
 export async function checkStability(): Promise<{ configured: boolean; credits: number | null }> {
   try {
-    const res = await fetch('/api/image', { method: 'GET' })
+    const res = await fetch('/api?fn=image', { method: 'GET' })
     if (!res.ok) return { configured: false, credits: null }
     const j = (await res.json()) as { configured?: boolean; credits?: number | null }
     return { configured: Boolean(j.configured), credits: j.credits ?? null }
@@ -54,7 +54,7 @@ export async function buildStoryboard(
   data: AppData,
 ): Promise<{ board?: Storyboard; error?: string }> {
   try {
-    const res = await fetch('/api/shots', {
+    const res = await fetch('/api?fn=shots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...input, context: buildContext(data) }),
@@ -82,7 +82,7 @@ export async function generateImage(
   model: ModelKey,
 ): Promise<{ image?: string; seed?: number; error?: string }> {
   try {
-    const res = await fetch('/api/image', {
+    const res = await fetch('/api?fn=image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, negative, aspect, model }),

@@ -50,7 +50,7 @@ export async function makeSnsPosts(
 ): Promise<SnsResult> {
   const empty: SnsResult = { channel, label: '', posts: [], hashtagPool: [], tips: [], provider: '' }
   try {
-    const res = await fetch('/api/sns', {
+    const res = await fetch('/api?fn=sns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ channel, topic, tone, count, context: buildContext(data) }),
@@ -104,7 +104,7 @@ export async function checkText(text: string, kind: CheckKind, data: AppData): P
     provider: '',
   }
   try {
-    const res = await fetch('/api/check', {
+    const res = await fetch('/api?fn=check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, kind, context: buildContext(data) }),

@@ -128,7 +128,7 @@ export interface CraftResult {
 /** AIに、そのサービス専用の指示文を作らせる */
 export async function craftPrompt(kind: CraftKind, idea: string, data: AppData): Promise<CraftResult> {
   try {
-    const res = await fetch('/api/craft', {
+    const res = await fetch('/api?fn=craft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ kind, idea, context: buildContext(data) }),

@@ -59,7 +59,7 @@ export const JOB_INFO: Record<JobKey, { label: string; staffId: string; hint: st
 /** 設定状況を確認する */
 export async function checkAgent(): Promise<{ ai: string[]; search: string[] }> {
   try {
-    const res = await fetch('/api/agent', { method: 'GET' })
+    const res = await fetch('/api?fn=agent', { method: 'GET' })
     if (!res.ok) return { ai: [], search: [] }
     const j = (await res.json()) as { ai?: string[]; search?: string[] }
     return { ai: j.ai ?? [], search: j.search ?? [] }
@@ -71,7 +71,7 @@ export async function checkAgent(): Promise<{ ai: string[]; search: string[] }> 
 /** AI社員に仕事を依頼する */
 export async function runAgent(job: JobKey, request: string, data: AppData): Promise<AgentResult> {
   try {
-    const res = await fetch('/api/agent', {
+    const res = await fetch('/api?fn=agent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job, request, context: buildContext(data) }),

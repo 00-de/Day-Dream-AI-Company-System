@@ -120,6 +120,37 @@ src/
 
 ---
 
+## サーバー機能（API）の構成
+
+Vercelの無料プラン（Hobby）は、**サーバー機能を12個まで**しか置けません。
+そのため、入口を1つにまとめて、中で振り分ける形にしています。
+
+```
+api/
+├ index.js          ← 唯一の入口（/api?fn=chat のように指定）
+├ _provider.js      AI呼び出しの共通処理
+├ _search.js        Web検索の共通処理
+└ _handlers/        実際の処理（12種類）
+   ├ chat.js        AI秘書チャット
+   ├ meeting.js     会議
+   ├ meetingchat.js 会議中の発言
+   ├ opinions.js    全社員の意見
+   ├ agent.js       会場・スポンサー探し、調査
+   ├ sns.js         SNS投稿文
+   ├ check.js       公開前チェック
+   ├ report.js      日報・週報
+   ├ dev.js         開発の相談
+   ├ craft.js       外部サービス用プロンプト
+   ├ shots.js       MV絵コンテ
+   └ image.js       Stability AI 画像生成
+```
+
+`_` で始まるファイル・フォルダは、URLとして公開されません。
+機能を追加するときは `_handlers/` にファイルを足し、`index.js` に1行加えるだけです。
+**これでいくつ機能を増やしても、Vercelの上限には当たりません。**
+
+---
+
 ## 技術構成
 
 | 項目 | 技術 |

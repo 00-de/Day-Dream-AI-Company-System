@@ -29,7 +29,7 @@ export async function holdMeeting(
   humanOpinions: HumanOpinion[] = [],
 ): Promise<MeetingResult> {
   try {
-    const res = await fetch('/api/meeting', {
+    const res = await fetch('/api?fn=meeting', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -168,7 +168,7 @@ export async function collectOpinions(
   data: AppData,
 ): Promise<OpinionsResult> {
   try {
-    const res = await fetch('/api/opinions', {
+    const res = await fetch('/api?fn=opinions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -231,7 +231,7 @@ export async function sendMeetingMessage(
   replyCount = 2,
 ): Promise<ChatReply> {
   try {
-    const res = await fetch('/api/meetingchat', {
+    const res = await fetch('/api?fn=meetingchat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

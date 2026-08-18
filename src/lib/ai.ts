@@ -52,7 +52,7 @@ export interface AiSettings {
 /** AIの使い分け設定を取得します */
 export async function getAiSettings(): Promise<AiSettings | null> {
   try {
-    const res = await fetch('/api/chat', { method: 'GET' })
+    const res = await fetch('/api?fn=chat', { method: 'GET' })
     if (!res.ok) return null
     const json = (await res.json()) as { settings?: AiSettings }
     return json.settings ?? null
@@ -63,7 +63,7 @@ export async function getAiSettings(): Promise<AiSettings | null> {
 
 export async function checkAiStatus(): Promise<string[]> {
   try {
-    const res = await fetch('/api/chat', { method: 'GET' })
+    const res = await fetch('/api?fn=chat', { method: 'GET' })
     if (!res.ok) return []
     const json = (await res.json()) as { available?: string[]; details?: { label: string; model: string }[] }
     // モデル名も分かる場合は「Gemini（gemini-3.6-flash）」の形で返します
@@ -83,7 +83,7 @@ export async function askAi(
   persona?: AiPersona,
 ): Promise<AiResult> {
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('/api?fn=chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages, context: buildContext(data), persona }),

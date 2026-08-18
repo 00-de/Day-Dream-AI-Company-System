@@ -77,7 +77,7 @@ export async function makeReport(
     provider: '',
   }
   try {
-    const res = await fetch('/api/report', {
+    const res = await fetch('/api?fn=report', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -137,7 +137,7 @@ export interface DevResult {
 export async function askDev(mode: DevMode, request: string, code: string): Promise<DevResult> {
   const empty: DevResult = { mode, answer: '', code: '', filename: '', steps: [], warnings: [], provider: '' }
   try {
-    const res = await fetch('/api/dev', {
+    const res = await fetch('/api?fn=dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mode, request, code }),
