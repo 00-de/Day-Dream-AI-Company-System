@@ -4,20 +4,18 @@ import { isFirebaseConfigured } from '../lib/firebase'
 import { DEFAULT_DATA } from '../data/defaults'
 
 /* ============================================================
-   ログイン画面
+   ログイン画面（明るい配色・大きな文字）
    ============================================================ */
 
 export function Login() {
   const { signIn, enterDemo, error, clearError } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const submit = async () => {
-    if (busy) return
-    if (!email || !password) {
-      return
-    }
+    if (busy || !email || !password) return
     setBusy(true)
     try {
       await signIn(email, password)
@@ -29,94 +27,110 @@ export function Login() {
   }
 
   return (
-    <div className="app-bg min-h-screen grid place-items-center px-4">
-      <div className="relative z-10 w-full max-w-[380px]">
+    <div className="bright-bg app-min-h min-h-screen grid place-items-center px-4 py-8">
+      <div className="relative z-10 w-full max-w-[440px]">
         {/* ロゴ */}
         <div className="text-center mb-6 animate-floatUp">
-          <div className="mx-auto w-16 h-16 rounded-2xl grid place-content-center bg-gradient-to-br from-cyan-500/25 to-purple-600/25 ring-1 ring-cyan-400/40 shadow-glow">
-            <span className="font-display font-black text-cyan-300 text-xl">DD</span>
+          <div className="mx-auto w-20 h-20 rounded-3xl grid place-content-center bg-white/25 ring-2 ring-white/50 shadow-2xl backdrop-blur">
+            <span className="font-display font-black text-white text-2xl drop-shadow">DD</span>
           </div>
-          <h1 className="mt-3 font-display text-[17px] font-bold text-slate-100">
+          <h1 className="mt-4 font-display text-[22px] sm:text-[26px] font-bold text-white drop-shadow-lg leading-tight">
             {DEFAULT_DATA.company.system}
           </h1>
-          <p className="text-[11px] text-cyan-400/70 mt-0.5">{DEFAULT_DATA.company.subtitle}</p>
+          <p className="text-[14px] text-cyan-100 mt-1 font-bold">{DEFAULT_DATA.company.subtitle}</p>
         </div>
 
-        <div className="panel p-5 animate-floatUp">
-          <h2 className="text-[13px] font-bold text-slate-100 mb-4">社長ログイン</h2>
+        <div className="bright-card rounded-3xl p-6 sm:p-7 animate-floatUp">
+          <h2 className="text-[20px] font-bold text-white mb-5 text-center">ログイン</h2>
 
-          <label className="block text-[11px] text-slate-400 mb-1" htmlFor="email">
+          {/* メールアドレス */}
+          <label className="block text-[15px] font-bold text-white mb-2" htmlFor="email">
             メールアドレス
           </label>
           <input
             id="email"
             type="email"
+            inputMode="email"
             autoComplete="email"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)
               clearError()
             }}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            className="w-full mb-3 bg-night-950/70 rounded-lg px-3 py-2.5 text-[13px] text-slate-100 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none transition"
-            placeholder="toshi@example.com"
+            onKeyDown={(e) => e.key === 'Enter' && void submit()}
+            className="bright-input w-full mb-5 rounded-xl px-4 py-3.5 text-[17px] transition"
+            placeholder="president@daydream-ai.jp"
           />
 
-          <label className="block text-[11px] text-slate-400 mb-1" htmlFor="password">
+          {/* パスワード */}
+          <label className="block text-[15px] font-bold text-white mb-2" htmlFor="password">
             パスワード
           </label>
-          <input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value)
-              clearError()
-            }}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            className="w-full bg-night-950/70 rounded-lg px-3 py-2.5 text-[13px] text-slate-100 placeholder:text-slate-600 ring-1 ring-white/10 focus:ring-cyan-400/50 outline-none transition"
-            placeholder="••••••••"
-          />
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                clearError()
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && void submit()}
+              className="bright-input w-full rounded-xl pl-4 pr-24 py-3.5 text-[17px] transition"
+              placeholder="パスワード"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示する'}
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-2 rounded-lg text-[13px] font-bold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition"
+            >
+              {showPassword ? '隠す' : '表示'}
+            </button>
+          </div>
 
           {error && (
-            <p className="mt-3 text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2 leading-relaxed">
+            <p className="mt-4 text-[14px] font-bold text-white bg-red-500/70 ring-1 ring-white/30 rounded-xl px-4 py-3 leading-relaxed">
               {error}
             </p>
           )}
 
+          {/* ログイン */}
           <button
             type="button"
-            onClick={submit}
+            onClick={() => void submit()}
             disabled={busy || !email || !password}
-            className="mt-4 w-full py-2.5 rounded-lg text-[13px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            className="rainbow-btn mt-6 w-full py-4 rounded-xl text-[18px] font-bold shadow-lg disabled:cursor-not-allowed"
           >
             {busy ? 'ログインしています…' : 'ログイン'}
           </button>
 
-          <div className="my-4 flex items-center gap-3 text-[10px] text-slate-600">
-            <span className="flex-1 h-px bg-white/10" />
+          <div className="my-5 flex items-center gap-3 text-[13px] text-white/70">
+            <span className="flex-1 h-px bg-white/30" />
             または
-            <span className="flex-1 h-px bg-white/10" />
+            <span className="flex-1 h-px bg-white/30" />
           </div>
 
           <button
             type="button"
             onClick={enterDemo}
-            className="w-full py-2.5 rounded-lg text-[12px] text-slate-300 ring-1 ring-white/10 hover:ring-cyan-400/40 hover:text-cyan-200 transition"
+            className="w-full py-3.5 rounded-xl text-[15px] font-bold text-white bg-white/20 ring-1 ring-white/40 hover:bg-white/30 transition"
           >
-            見るだけモードで開く（保存はこの端末のみ）
+            見るだけモードで開く
           </button>
+          <p className="mt-2 text-center text-[12px] text-white/70">
+            保存はこの端末の中だけになります
+          </p>
 
           {!isFirebaseConfigured && (
-            <p className="mt-3 text-[10px] text-amber-300/90 bg-amber-400/10 ring-1 ring-amber-400/25 rounded-lg px-3 py-2 leading-relaxed">
-              Firebaseの環境変数がまだ設定されていません。
-              「見るだけモード」で全機能を確認できます（データは、この端末の中だけに保存されます）。
+            <p className="mt-4 text-[13px] text-yellow-900 bg-yellow-300/90 rounded-xl px-4 py-3 leading-relaxed font-bold">
+              Firebaseの設定がまだです。「見るだけモード」で全画面を確認できます。
             </p>
           )}
         </div>
 
-        <p className="mt-4 text-center text-[10px] text-slate-600">
+        <p className="mt-5 text-center text-[12px] text-white/70">
           © 2026 {DEFAULT_DATA.company.name}
         </p>
       </div>

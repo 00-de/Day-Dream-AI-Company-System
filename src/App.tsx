@@ -15,6 +15,7 @@ import { DataProvider, useData } from './lib/data'
 import { LibraryProvider } from './lib/library'
 import { isFirebaseConfigured } from './lib/firebase'
 import { ScaleProvider } from './lib/uiScale'
+import { ThemeProvider } from './lib/theme'
 import { ScaleSettings } from './components/ScalePicker'
 import { checkAiStatus, getAiSettings, type AiSettings } from './lib/ai'
 
@@ -281,12 +282,14 @@ function Gate() {
 
 export default function App() {
   return (
-    <ScaleProvider>
-      <div className="scale-root">
-        <AuthProvider>
-          <Gate />
-        </AuthProvider>
-      </div>
-    </ScaleProvider>
+    <ThemeProvider>
+      <ScaleProvider>
+        <div className="scale-root">
+          <AuthProvider>
+            <Gate />
+          </AuthProvider>
+        </div>
+      </ScaleProvider>
+    </ThemeProvider>
   )
 }

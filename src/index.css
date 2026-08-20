@@ -217,3 +217,196 @@ html[data-scale='280'] .scroll-box {
 .app-min-h {
   min-height: 100dvh;
 }
+
+
+/* ============================================================
+   ログイン画面の明るい背景
+   ============================================================ */
+
+.bright-bg {
+  background:
+    radial-gradient(1200px 800px at 15% 0%, #4f46e5 0%, transparent 55%),
+    radial-gradient(1000px 700px at 85% 10%, #0ea5e9 0%, transparent 55%),
+    radial-gradient(900px 700px at 50% 100%, #a855f7 0%, transparent 55%),
+    linear-gradient(160deg, #1e3a8a 0%, #312e81 45%, #4c1d95 100%);
+}
+
+/* ふわふわ動く光の玉 */
+.bright-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(320px 320px at 20% 30%, rgba(34, 211, 238, 0.35), transparent 70%),
+    radial-gradient(280px 280px at 80% 65%, rgba(236, 72, 153, 0.3), transparent 70%),
+    radial-gradient(240px 240px at 60% 15%, rgba(250, 204, 21, 0.22), transparent 70%);
+  animation: floatOrbs 14s ease-in-out infinite alternate;
+}
+
+@keyframes floatOrbs {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-24px, 26px, 0) scale(1.06);
+  }
+}
+
+/* 明るい背景の上に置くカード（白めの半透明） */
+.bright-card {
+  background: rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.55);
+}
+
+/* 明るい背景の上の入力欄 */
+.bright-input {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.bright-input::placeholder {
+  color: #94a3b8;
+}
+
+.bright-input:focus {
+  border-color: #22d3ee;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.3);
+  outline: none;
+}
+
+/* 虹色のログインボタン */
+.rainbow-btn {
+  background: linear-gradient(100deg, #22d3ee, #6366f1, #a855f7, #ec4899);
+  background-size: 250% 100%;
+  color: #fff;
+  border: none;
+  transition: background-position 0.5s ease, transform 0.15s ease;
+}
+
+.rainbow-btn:hover:not(:disabled) {
+  background-position: 100% 0;
+  transform: translateY(-1px);
+}
+
+.rainbow-btn:disabled {
+  opacity: 0.55;
+}
+
+
+/* ============================================================
+   明るいテーマ（本体画面）
+   html に data-theme="bright" が付くと有効になります
+   ============================================================ */
+
+html[data-theme='bright'] body {
+  background-color: #eef2ff;
+  color: #1e293b;
+}
+
+/* 背景の光 */
+html[data-theme='bright'] .app-bg::before {
+  background-image:
+    radial-gradient(900px 520px at 12% -6%, rgba(99, 102, 241, 0.22), transparent 60%),
+    radial-gradient(820px 520px at 88% -4%, rgba(236, 72, 153, 0.18), transparent 60%),
+    radial-gradient(1000px 600px at 50% 108%, rgba(14, 165, 233, 0.2), transparent 60%);
+}
+
+html[data-theme='bright'] .app-bg::after {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.09) 1px, transparent 1px);
+  opacity: 0.5;
+}
+
+/* パネル（カード） */
+html[data-theme='bright'] .panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
+  border-color: rgba(99, 102, 241, 0.22);
+  box-shadow: 0 8px 24px -14px rgba(30, 41, 59, 0.35);
+}
+
+html[data-theme='bright'] .panel-hover:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 20px -6px rgba(99, 102, 241, 0.4);
+}
+
+html[data-theme='bright'] .panel-title {
+  color: #334155;
+}
+
+/* 文字色をまとめて置き換えます */
+html[data-theme='bright'] .text-slate-50,
+html[data-theme='bright'] .text-slate-100,
+html[data-theme='bright'] .text-slate-200 {
+  color: #1e293b !important;
+}
+
+html[data-theme='bright'] .text-slate-300,
+html[data-theme='bright'] .text-slate-400 {
+  color: #475569 !important;
+}
+
+html[data-theme='bright'] .text-slate-500,
+html[data-theme='bright'] .text-slate-600 {
+  color: #64748b !important;
+}
+
+/* ネオン色は、明るい背景でも読める濃さにします */
+html[data-theme='bright'] .text-cyan-300 { color: #0e7490 !important; }
+html[data-theme='bright'] .text-cyan-200 { color: #155e75 !important; }
+html[data-theme='bright'] .text-blue-300 { color: #1d4ed8 !important; }
+html[data-theme='bright'] .text-purple-300 { color: #7e22ce !important; }
+html[data-theme='bright'] .text-pink-300 { color: #be185d !important; }
+html[data-theme='bright'] .text-emerald-300 { color: #047857 !important; }
+html[data-theme='bright'] .text-amber-300 { color: #b45309 !important; }
+html[data-theme='bright'] .text-red-300 { color: #b91c1c !important; }
+html[data-theme='bright'] .text-red-400 { color: #dc2626 !important; }
+html[data-theme='bright'] .text-emerald-400 { color: #059669 !important; }
+html[data-theme='bright'] .text-cyan-400\/80,
+html[data-theme='bright'] .text-cyan-400\/70 { color: #0891b2 !important; }
+
+/* ヘッダー */
+html[data-theme='bright'] header.sticky {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* 入力欄 */
+html[data-theme='bright'] input,
+html[data-theme='bright'] textarea,
+html[data-theme='bright'] select {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+}
+
+/* 薄い枠線を、見える濃さにします */
+html[data-theme='bright'] .ring-white\/10,
+html[data-theme='bright'] .ring-white\/15 {
+  --tw-ring-color: rgba(99, 102, 241, 0.28) !important;
+}
+
+html[data-theme='bright'] .bg-white\/\[0\.03\],
+html[data-theme='bright'] .bg-white\/\[0\.04\],
+html[data-theme='bright'] .bg-white\/\[0\.05\],
+html[data-theme='bright'] .bg-white\/\[0\.06\] {
+  background-color: rgba(99, 102, 241, 0.07) !important;
+}
+
+html[data-theme='bright'] .border-white\/10 {
+  border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* ドロワー */
+html[data-theme='bright'] aside {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+}
+
+/* グラフの目盛り線 */
+html[data-theme='bright'] .bg-white\/\[0\.06\] {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+}

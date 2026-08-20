@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit, IconMeeting } from './Icons'
 import { StatusDot } from './Ui'
 import { ScalePicker } from './ScalePicker'
+import { useTheme, THEME_LABEL } from '../lib/theme'
 
 /* ============================================================
    上部ヘッダー（画面切替タブ）
@@ -46,6 +47,7 @@ export function Header({
 }) {
   const { data } = useData()
   const { signOut, demo, account } = useAuth()
+  const { theme, toggle } = useTheme()
   const COMPANY = data.company
   const [activeKey, setActiveKey] = useState<string>('management')
   const [clock, setClock] = useState(() => new Date())
@@ -147,6 +149,16 @@ export function Header({
             データ編集
           </button>
           )}
+
+          <button
+            type="button"
+            onClick={toggle}
+            title={`${THEME_LABEL[theme === 'dark' ? 'bright' : 'dark']}に切り替え`}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+          >
+            <span className="text-[15px] leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {THEME_LABEL[theme === 'dark' ? 'bright' : 'dark']}
+          </button>
 
           <button
             type="button"
