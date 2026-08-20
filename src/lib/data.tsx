@@ -44,6 +44,16 @@ function merge(base: AppData, incoming: Partial<AppData> | null | undefined): Ap
 
   const merged: AppData = { ...base, ...incoming }
 
+  // バージョン番号は、保存されたデータではなく必ず最新のコードの値を使います
+  // （保存済みの古い番号が残り続けるのを防ぎます）
+  merged.company = {
+    ...base.company,
+    ...(incoming.company ?? {}),
+    version: base.company.version,
+    system: base.company.system,
+    subtitle: base.company.subtitle,
+  }
+
   const savedVersion = incoming.staffVersion ?? 0
   const latestVersion = base.staffVersion ?? 0
 
