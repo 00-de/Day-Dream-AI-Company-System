@@ -80,6 +80,15 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 relative backdrop-blur-xl bg-night-950/80 border-b border-cyan-400/10">
+      {/* スマホでメニューを開いたとき、背後をタップで閉じます */}
+      {menuOpen && (
+        <div
+          className="md:hidden fixed inset-0 top-14 bg-black/40 -z-10"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <div className="header-bar mx-auto max-w-[1800px] px-4 py-2.5 flex items-center gap-4">
         {/* スマホ用のメニューボタン */}
         <button
@@ -111,9 +120,9 @@ export function Header({
         <nav
           className={`${
             menuOpen
-              ? 'absolute top-full left-0 right-0 flex-col items-stretch gap-1 p-3 bg-night-900/98 backdrop-blur-xl border-b border-cyan-400/20 flex'
+              ? 'absolute top-full left-0 right-0 flex-col items-stretch gap-1 p-3 bg-night-900/98 backdrop-blur-xl border-b border-cyan-400/20 flex max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain shadow-2xl'
               : 'hidden'
-          } md:flex md:static md:flex-1 md:flex-row md:items-center md:justify-center md:gap-1 md:p-0 md:bg-transparent md:border-0 overflow-x-auto`}
+          } md:flex md:static md:flex-1 md:flex-row md:items-center md:justify-center md:gap-1 md:p-0 md:bg-transparent md:border-0 md:max-h-none md:overflow-x-auto md:overflow-y-visible md:shadow-none`}
           aria-label="画面切替"
         >
           {TABS.map((t) => {
@@ -125,7 +134,7 @@ export function Header({
                 type="button"
                 onClick={() => handleTab(t)}
                 aria-current={on ? 'page' : undefined}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] whitespace-nowrap transition ${
+                className={`flex items-center gap-2 px-3.5 py-3 md:py-2 rounded-lg text-[14px] md:text-[13px] whitespace-nowrap transition ${
                   on
                     ? 'bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-400/40 shadow-glow'
                     : 'text-slate-400 hover:text-slate-100 hover:bg-white/5'
@@ -137,13 +146,13 @@ export function Header({
             )
           })}
 
-          <span className="w-px h-5 bg-white/10 mx-1" />
+          <span className="hidden md:block w-px h-5 bg-white/10 mx-1" />
 
           {account.canEdit && (
           <button
             type="button"
             onClick={onOpenEdit}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+            className="flex items-center gap-2 px-3.5 py-3 md:py-2 rounded-lg text-[14px] md:text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
           >
             <IconEdit className="w-4 h-4" />
             データ編集
@@ -154,7 +163,7 @@ export function Header({
             type="button"
             onClick={toggle}
             title={`${THEME_LABEL[theme === 'dark' ? 'bright' : 'dark']}に切り替え`}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+            className="flex items-center gap-2 px-3.5 py-3 md:py-2 rounded-lg text-[14px] md:text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
           >
             <span className="text-[15px] leading-none">{theme === 'dark' ? '☀️' : '🌙'}</span>
             {THEME_LABEL[theme === 'dark' ? 'bright' : 'dark']}
@@ -163,7 +172,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenSettings}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+            className="flex items-center gap-2 px-3.5 py-3 md:py-2 rounded-lg text-[14px] md:text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
           >
             <IconSettings className="w-4 h-4" />
             設定
@@ -177,7 +186,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenNotices}
-            className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
+            className="relative flex items-center gap-2 px-3.5 py-3 md:py-2 rounded-lg text-[14px] md:text-[13px] text-slate-400 hover:text-slate-100 hover:bg-white/5 transition"
           >
             <IconBell className="w-4 h-4" />
             通知

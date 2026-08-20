@@ -40,7 +40,7 @@ function LoadingScreen({ message }: { message: string }) {
 /** ログイン後の本体 */
 function Main() {
   const { data, loading, source } = useData()
-  const { user, demo, account } = useAuth()
+  const { user, demo, account, signOut } = useAuth()
   const [screen, setScreen] = useState<ScreenKey>('management')
   const [notices, setNotices] = useState(false)
   const [settings, setSettings] = useState(false)
@@ -68,6 +68,22 @@ function Main() {
   return (
     <div className="app-bg min-h-screen">
       <div className="relative z-10">
+        {/* 見るだけモードのときの注意帯 */}
+        {demo && (
+          <div className="bg-amber-500/90 text-amber-950 px-4 py-2 text-center">
+            <p className="text-[12px] font-bold">
+              見るだけモードです。このデータは他の端末と共有されません
+            </p>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="mt-1 text-[11px] font-bold underline hover:no-underline"
+            >
+              ログインして全員のデータを見る
+            </button>
+          </div>
+        )}
+
         <Header
           screen={screen}
           onChangeScreen={setScreen}

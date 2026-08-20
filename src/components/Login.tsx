@@ -119,8 +119,10 @@ export function Login() {
           >
             見るだけモードで開く
           </button>
-          <p className="mt-2 text-center text-[12px] text-white/70">
-            保存はこの端末の中だけになります
+          <p className="mt-2 text-center text-[12px] text-white/80 leading-relaxed">
+            お試し用です。入力したデータは<b>この端末の中だけ</b>に保存され、
+            <br />
+            パソコンや他のスマホとは共有されません
           </p>
 
           {!isFirebaseConfigured && (
