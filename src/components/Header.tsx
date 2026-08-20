@@ -49,6 +49,7 @@ export function Header({
   const COMPANY = data.company
   const [activeKey, setActiveKey] = useState<string>('management')
   const [clock, setClock] = useState(() => new Date())
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date()), 1000)
@@ -60,6 +61,7 @@ export function Header({
   }, [screen])
 
   const handleTab = (tab: Tab) => {
+    setMenuOpen(false)
     setActiveKey(tab.key)
     onChangeScreen(tab.screen)
     if (tab.anchor) {
@@ -75,8 +77,19 @@ export function Header({
   const date = clock.toLocaleDateString('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' })
 
   return (
-    <header className="sticky top-0 z-30 backdrop-blur-xl bg-night-950/80 border-b border-cyan-400/10">
+    <header className="sticky top-0 z-30 relative backdrop-blur-xl bg-night-950/80 border-b border-cyan-400/10">
       <div className="header-bar mx-auto max-w-[1800px] px-4 py-2.5 flex items-center gap-4">
+        {/* スマホ用のメニューボタン */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="メニューを開く"
+          aria-expanded={menuOpen}
+          className="md:hidden w-9 h-9 shrink-0 grid place-content-center rounded-lg ring-1 ring-white/10 text-slate-300"
+        >
+          <span className="text-[16px] leading-none">{menuOpen ? '✕' : '☰'}</span>
+        </button>
+
         {/* ロゴ */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="relative w-9 h-9 rounded-xl grid place-content-center bg-gradient-to-br from-cyan-500/25 to-purple-600/25 ring-1 ring-cyan-400/40">
@@ -84,14 +97,23 @@ export function Header({
           </div>
           <div className="leading-tight">
             <h1 className="font-display text-[15px] font-bold tracking-wide text-slate-100">
-              {COMPANY.system}
+              {/* スマホでは短い表示にします */}
+              <span className="md:hidden">DayDream AI</span>
+              <span className="hidden md:inline">{COMPANY.system}</span>
             </h1>
-            <p className="text-[10px] text-cyan-400/70">{COMPANY.subtitle}</p>
+            <p className="hidden sm:block text-[10px] text-cyan-400/70">{COMPANY.subtitle}</p>
           </div>
         </div>
 
         {/* タブ */}
-        <nav className="flex-1 flex items-center justify-center gap-1 overflow-x-auto" aria-label="画面切替">
+        <nav
+          className={`${
+            menuOpen
+              ? 'absolute top-full left-0 right-0 flex-col items-stretch gap-1 p-3 bg-night-900/98 backdrop-blur-xl border-b border-cyan-400/20 flex'
+              : 'hidden'
+          } md:flex md:static md:flex-1 md:flex-row md:items-center md:justify-center md:gap-1 md:p-0 md:bg-transparent md:border-0 overflow-x-auto`}
+          aria-label="画面切替"
+        >
           {TABS.map((t) => {
             const on = activeKey === t.key
             const Icon = t.icon
@@ -135,6 +157,11 @@ export function Header({
             設定
           </button>
 
+          {/* スマホの折りたたみメニュー内にも文字サイズを置きます */}
+          <span className="sm:hidden py-1">
+            <ScalePicker />
+          </span>
+
           <button
             type="button"
             onClick={onOpenNotices}
@@ -151,10 +178,12 @@ export function Header({
         </nav>
 
         {/* 社長 */}
-        <div className="flex items-center gap-3 shrink-0">
-          <ScalePicker />
+        <div className="flex items-center gap-3 shrink-0 ml-auto md:ml-0">
+          <span className="hidden sm:block">
+            <ScalePicker />
+          </span>
 
-          <div className="text-right leading-tight hidden lg:block">
+          <div className="text-right leading-tight hidden xl:block">
             <p className="font-num text-[13px] text-slate-200">{time}</p>
             <p className="text-[10px] text-slate-500">{date}</p>
           </div>
@@ -179,9 +208,11 @@ export function Header({
           <button
             type="button"
             onClick={() => void signOut()}
+            aria-label="ログアウト"
             className="text-[11px] px-2.5 py-1.5 rounded-lg text-slate-400 ring-1 ring-white/10 hover:text-red-300 hover:ring-red-400/40 transition"
           >
-            ログアウト
+            <span className="hidden sm:inline">ログアウト</span>
+            <span className="sm:hidden">↩</span>
           </button>
         </div>
       </div>

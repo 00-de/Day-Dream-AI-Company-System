@@ -161,3 +161,59 @@ html[data-scale='180'] .scroll-box,
 html[data-scale='280'] .scroll-box {
   max-height: none !important;
 }
+
+
+/* ============================================================
+   スマートフォン対応
+   画面の狭い端末でも、横スクロールせずに使えるようにします
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* 主要な段組みは、すべて縦1列にします */
+  .layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* パネル内の細かい並びは、最大2列までにします */
+  .inner-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* 指を置きやすいよう、ボタンの高さを確保します */
+  button,
+  select,
+  a[role='button'] {
+    min-height: 40px;
+  }
+
+  /* 入力欄の文字を16px以上にします（これ未満だとiPhoneで自動拡大されます） */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* パネルの余白を詰めて、表示できる情報量を増やします */
+  .panel > div {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* 横に長い表は、指でスクロールできるようにします */
+  .scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* 画面のいちばん下（iPhoneのホームバー）にかからないようにします */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* スマホでの高さ指定（アドレスバーの出入りで揺れないように） */
+.app-min-h {
+  min-height: 100dvh;
+}
