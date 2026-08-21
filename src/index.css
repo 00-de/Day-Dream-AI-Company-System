@@ -264,13 +264,17 @@ html[data-scale='280'] .scroll-box {
 
 /* 明るい背景の上の入力欄 */
 .bright-input {
-  background: rgba(255, 255, 255, 0.95);
-  color: #0f172a;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff !important;
+  /* 白い背景なので、文字は必ず濃い色にします */
+  color: #0f172a !important;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  -webkit-text-fill-color: #0f172a;
 }
 
 .bright-input::placeholder {
-  color: #94a3b8;
+  color: #7c8aa5 !important;
+  -webkit-text-fill-color: #7c8aa5;
+  opacity: 1 !important;
 }
 
 .bright-input:focus {
@@ -466,13 +470,14 @@ html:not([data-theme='bright']) .text-amber-400 { color: #fbbf24 !important; }
 html:not([data-theme='bright']) .text-cyan-400 { color: #22d3ee !important; }
 
 /* 入力欄の文字と、入力前の案内文 */
-html:not([data-theme='bright']) input,
-html:not([data-theme='bright']) textarea,
-html:not([data-theme='bright']) select {
+/* 明るい入力欄（ログイン画面）は対象から外します */
+html:not([data-theme='bright']) input:not(.bright-input),
+html:not([data-theme='bright']) textarea:not(.bright-input),
+html:not([data-theme='bright']) select:not(.bright-input) {
   color: #f8fafc !important;
 }
 
-html:not([data-theme='bright']) ::placeholder {
+html:not([data-theme='bright']) *:not(.bright-input)::placeholder {
   color: #94a3b8 !important;
   opacity: 1;
 }
