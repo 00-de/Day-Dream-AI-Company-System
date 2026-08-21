@@ -120,10 +120,11 @@ export function Header({
         <nav
           className={`${
             menuOpen
-              ? 'absolute top-full left-0 right-0 flex-col items-stretch gap-1 p-3 bg-night-900/98 backdrop-blur-xl border-b border-cyan-400/20 flex max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain shadow-2xl'
+              ? 'absolute top-full left-0 right-0 flex-col items-stretch gap-1 p-3 border-b border-cyan-400/20 flex max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain shadow-2xl'
               : 'hidden'
           } md:flex md:static md:flex-1 md:flex-row md:items-center md:justify-center md:gap-1 md:p-0 md:bg-transparent md:border-0 md:max-h-none md:overflow-x-auto md:overflow-y-visible md:shadow-none`}
           aria-label="画面切替"
+          style={menuOpen ? { backgroundColor: theme === 'bright' ? '#ffffff' : '#080c1a' } : undefined}
         >
           {TABS.map((t) => {
             const on = activeKey === t.key

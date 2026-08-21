@@ -410,3 +410,131 @@ html[data-theme='bright'] aside {
 html[data-theme='bright'] .bg-white\/\[0\.06\] {
   background-color: rgba(99, 102, 241, 0.12) !important;
 }
+
+
+/* ============================================================
+   文字を読みやすくする調整（夜モード）
+
+   スマホの画面では、薄いグレーの文字がとても読みにくいため、
+   全体的に明るく、色味のある文字色に置き換えます。
+   ============================================================ */
+
+html:not([data-theme='bright']) body {
+  color: #f1f5f9;
+}
+
+/* 本文の文字は、しっかり明るく */
+html:not([data-theme='bright']) .text-slate-200 {
+  color: #f1f5f9 !important;
+}
+
+html:not([data-theme='bright']) .text-slate-300 {
+  color: #e2e8f0 !important;
+}
+
+/* 説明文も、読める明るさまで上げます */
+html:not([data-theme='bright']) .text-slate-400 {
+  color: #c7d2e5 !important;
+}
+
+html:not([data-theme='bright']) .text-slate-500 {
+  color: #a9b8d0 !important;
+}
+
+html:not([data-theme='bright']) .text-slate-600 {
+  color: #93a3bd !important;
+}
+
+/* 見出し・パネル名は、水色寄りの明るい色に */
+html:not([data-theme='bright']) .panel-title {
+  color: #a5f3fc !important;
+  font-weight: 700;
+}
+
+/* ネオン色は、暗い背景で映える明るさに */
+html:not([data-theme='bright']) .text-cyan-300 { color: #67e8f9 !important; }
+html:not([data-theme='bright']) .text-cyan-200 { color: #a5f3fc !important; }
+html:not([data-theme='bright']) .text-blue-300 { color: #93c5fd !important; }
+html:not([data-theme='bright']) .text-purple-300 { color: #d8b4fe !important; }
+html:not([data-theme='bright']) .text-pink-300 { color: #f9a8d4 !important; }
+html:not([data-theme='bright']) .text-emerald-300 { color: #6ee7b7 !important; }
+html:not([data-theme='bright']) .text-amber-300 { color: #fcd34d !important; }
+html:not([data-theme='bright']) .text-red-300 { color: #fca5a5 !important; }
+html:not([data-theme='bright']) .text-emerald-400 { color: #34d399 !important; }
+html:not([data-theme='bright']) .text-red-400 { color: #f87171 !important; }
+html:not([data-theme='bright']) .text-amber-400 { color: #fbbf24 !important; }
+html:not([data-theme='bright']) .text-cyan-400 { color: #22d3ee !important; }
+
+/* 入力欄の文字と、入力前の案内文 */
+html:not([data-theme='bright']) input,
+html:not([data-theme='bright']) textarea,
+html:not([data-theme='bright']) select {
+  color: #f8fafc !important;
+}
+
+html:not([data-theme='bright']) ::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+/* 押せるボタンは、押せると分かる明るさに */
+html:not([data-theme='bright']) button:disabled {
+  opacity: 0.5;
+}
+
+/* ============================================================
+   文字を読みやすくする調整（明るいモード）
+   白い背景でも、はっきり読める濃さにします
+   ============================================================ */
+
+html[data-theme='bright'] .panel-title {
+  color: #1e293b !important;
+  font-weight: 700;
+}
+
+html[data-theme='bright'] ::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+
+/* 明るい背景で薄すぎる色を、濃い色に置き換えます */
+html[data-theme='bright'] .text-cyan-400 { color: #0e7490 !important; }
+html[data-theme='bright'] .text-amber-400 { color: #b45309 !important; }
+html[data-theme='bright'] .text-blue-400 { color: #1d4ed8 !important; }
+html[data-theme='bright'] .text-purple-400 { color: #7e22ce !important; }
+html[data-theme='bright'] .text-pink-400 { color: #be185d !important; }
+
+/* ============================================================
+   スマホでは、小さすぎる文字を底上げします
+   （9px・10pxは、スマホだと読めないため）
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .text-\[8px\] { font-size: 11px !important; }
+  .text-\[9px\] { font-size: 12px !important; }
+  .text-\[10px\] { font-size: 12.5px !important; }
+  .text-\[11px\] { font-size: 13.5px !important; }
+  .text-\[12px\] { font-size: 14.5px !important; }
+  .text-\[13px\] { font-size: 15px !important; }
+
+  /* 行間も少し広げて読みやすくします */
+  .panel {
+    line-height: 1.6;
+  }
+}
+
+
+/* ============================================================
+   明るいモードのとき、スマホの折りたたみメニューを
+   はっきり白くします（背後と重なって見えないようにするため）
+   ============================================================ */
+
+html[data-theme='bright'] header nav {
+  background-color: rgba(255, 255, 255, 0.99) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* 夜モードのメニューも、より濃くします */
+html:not([data-theme='bright']) header nav.flex-col {
+  background-color: rgba(8, 12, 26, 0.99) !important;
+}
