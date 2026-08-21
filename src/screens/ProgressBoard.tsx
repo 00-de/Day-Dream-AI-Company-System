@@ -8,6 +8,7 @@ import { Panel, ProgressBar, ACCENT, StatusDot, StateBadge } from '../components
 import { Avatar } from '../components/Avatar'
 import { Donut } from '../components/Charts'
 import { IconCheck, IconCalendar, IconUsers, IconChart, IconEdit } from '../components/Icons'
+import { AskStaffModal } from '../components/AskStaffModal'
 
 /* ============================================================
    仕事の進捗状況（4つのタブ）
@@ -46,6 +47,7 @@ export function ProgressBoard() {
   const { account } = useAuth()
   const [tab, setTab] = useState<Tab>('overview')
   const [selected, setSelected] = useState<AiStaff | null>(null)
+  const [asking, setAsking] = useState<AiStaff | null>(null)
   const [filter, setFilter] = useState<'all' | 'todo' | 'doing' | 'done' | 'late'>('all')
   const [orderTo, setOrderTo] = useState(data.staff[0]?.id ?? '')
   const [orderText, setOrderText] = useState('')
@@ -115,6 +117,8 @@ export function ProgressBoard() {
 
   return (
     <div className="space-y-3">
+      <AskStaffModal staff={asking} onClose={() => setAsking(null)} />
+
       {/* タブ */}
       <nav className="panel px-2 py-2 flex flex-wrap gap-1.5" aria-label="進捗状況のタブ">
         {TABS.map((t) => {
@@ -272,10 +276,19 @@ export function ProgressBoard() {
                   <p className={`text-[13px] font-bold ${ACCENT[selected.accent].text}`}>{selected.name}</p>
                   <p className="text-[10px] text-slate-400">{selected.role}</p>
                 </div>
-                <StateBadge
-                  text={selected.status === 'active' ? '稼働中' : '待機中'}
-                  tone={selected.status === 'active' ? 'good' : 'warn'}
-                />
+                <span className="flex items-center gap-2">
+                  <StateBadge
+                    text={selected.status === 'active' ? '稼働中' : '待機中'}
+                    tone={selected.status === 'active' ? 'good' : 'warn'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setAsking(selected)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-bold text-cyan-100 bg-cyan-500/25 ring-1 ring-cyan-400/40 hover:bg-cyan-500/40 transition"
+                  >
+                    依頼する
+                  </button>
+                </span>
               </div>
 
               {timeline.length === 0 ? (

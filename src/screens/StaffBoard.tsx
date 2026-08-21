@@ -11,6 +11,7 @@ import { IconCheck } from '../components/Icons'
 import { AgentPanel } from '../components/AgentPanel'
 import { SnsPanel, CheckPanel } from '../components/StaffWorkPanel'
 import { ReportPanel, DevPanel } from '../components/LeadWorkPanel'
+import { AskStaffModal } from '../components/AskStaffModal'
 
 /* ============================================================
    AI社員ボード
@@ -28,6 +29,7 @@ function shortDate(d: string) {
 export function StaffBoard() {
   const { data } = useData()
   const [toCheck, setToCheck] = useState('')
+  const [asking, setAsking] = useState<AiStaff | null>(null)
   const { tasks, updateTask } = useLibrary()
   const { account } = useAuth()
   const [group, setGroup] = useState<'all' | 'core' | 'member' | 'staff'>('all')
@@ -263,10 +265,21 @@ export function StaffBoard() {
                   {opened ? '閉じる' : `残り ${b.tasks.length - 4} 件をすべて表示`}
                 </button>
               )}
+
+              {/* この社員に仕事を頼む */}
+              <button
+                type="button"
+                onClick={() => setAsking(b.staff)}
+                className="mt-2 w-full py-2 rounded-lg text-[11px] font-bold text-cyan-100 bg-cyan-500/20 ring-1 ring-cyan-400/40 hover:bg-cyan-500/35 transition"
+              >
+                {b.staff.name}に依頼する
+              </button>
             </section>
           )
         })}
       </div>
+
+      <AskStaffModal staff={asking} onClose={() => setAsking(null)} />
 
       {/* 担当が外れているタスク */}
       {unassigned.length > 0 && (

@@ -5,6 +5,7 @@ import { useData } from '../lib/data'
 import { Panel, MoreLink, ProgressBar, StateBadge, ACCENT, StatusDot } from '../components/Ui'
 import { Donut, Sparkline } from '../components/Charts'
 import { StaffCard } from '../components/StaffCard'
+import { AskStaffModal } from '../components/AskStaffModal'
 import { SecretaryChat } from '../components/SecretaryChat'
 import { TaskPanel } from '../components/TaskPanel'
 import { useLibrary } from '../lib/library'
@@ -37,6 +38,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
   const { media } = useLibrary()
   const [group, setGroup] = useState<'all' | 'core' | 'member' | 'staff'>('all')
   const [selected, setSelected] = useState<AiStaff | null>(null)
+  const [asking, setAsking] = useState<AiStaff | null>(null)
 
   // Firestore（または端末内）のデータを使う
   const {
@@ -178,8 +180,14 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
                 <p className="text-[11px] text-slate-400">{selected.role}</p>
                 <p className="mt-1 text-[11px] text-slate-300">
                   現在 <span className="font-num text-cyan-300">{selected.tasks}件</span> のタスクを担当中。
-                  指示はAI秘書チャットから送信できます。
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setAsking(selected)}
+                  className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-bold text-cyan-100 bg-cyan-500/25 ring-1 ring-cyan-400/40 hover:bg-cyan-500/40 transition"
+                >
+                  {selected.name}に仕事を依頼する
+                </button>
               </div>
               <button
                 type="button"
@@ -257,6 +265,8 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
           </Panel>
         </div>
       </div>
+
+      <AskStaffModal staff={asking} onClose={() => setAsking(null)} />
 
       {/* ─────────── 右：サイドレール ─────────── */}
       <div className="xl:col-span-3 space-y-3">

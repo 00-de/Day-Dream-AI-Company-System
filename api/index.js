@@ -12,6 +12,7 @@
    ============================================================ */
 
 import agent from './_handlers/agent.js'
+import ask from './_handlers/ask.js'
 import chat from './_handlers/chat.js'
 import check from './_handlers/check.js'
 import craft from './_handlers/craft.js'
@@ -26,6 +27,7 @@ import sns from './_handlers/sns.js'
 
 const HANDLERS = {
   agent,
+  ask,
   chat,
   check,
   craft,
