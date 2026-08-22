@@ -140,17 +140,19 @@ export function AgentPanel() {
         type="button"
         onClick={() => void run()}
         disabled={busy || !request.trim() || !account.canEdit}
-        className="mt-2 w-full py-2.5 rounded-lg text-[12px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition flex items-center justify-center gap-1.5"
+        className={`mt-2 w-full py-3 rounded-xl text-[13px] flex items-center justify-center gap-2 ${busy ? 'ask-btn-busy' : 'ask-btn'}`}
       >
         <IconSparkle className="w-4 h-4" />
         {busy ? '仕事中です…' : `${staff?.name ?? 'AI社員'}に依頼する`}
       </button>
 
       {busy && (
-        <div className="mt-2">
-          <ProgressBar value={100} accent="gradient" height={3} />
-          <p className="text-[11px] text-cyan-300 mt-1.5">{step}</p>
-          <p className="text-[9px] text-slate-600">30〜60秒かかります</p>
+        <div className="mt-2 rounded-xl px-3 py-2.5 busy-banner flex items-center gap-2">
+          <span className="text-[18px] animate-pulseDot">⏳</span>
+          <div className="flex-1">
+            <p className="text-[13px] font-bold">依頼中です</p>
+            <p className="text-[11px] opacity-90">{step}</p>
+          </div>
         </div>
       )}
 

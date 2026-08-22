@@ -270,7 +270,7 @@ export function StaffBoard() {
               <button
                 type="button"
                 onClick={() => setAsking(b.staff)}
-                className="mt-2 w-full py-2 rounded-lg text-[11px] font-bold text-cyan-100 bg-cyan-500/20 ring-1 ring-cyan-400/40 hover:bg-cyan-500/35 transition"
+                className="ask-btn-sm mt-2 w-full py-2.5 rounded-lg text-[12px]"
               >
                 {b.staff.name}に依頼する
               </button>

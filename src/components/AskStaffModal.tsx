@@ -77,6 +77,15 @@ export function AskStaffModal({ staff, onClose }: { staff: AiStaff | null; onClo
           className="panel w-full max-w-[720px] p-4 sm:p-5 my-4"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* 依頼中は、いちばん上にも表示します */}
+          {busy && (
+            <div className="sticky -top-4 sm:-top-5 -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 mb-3 px-4 py-2 busy-banner rounded-t-xl z-10">
+              <p className="text-[13px] font-bold text-center">
+                ⏳ {staff.name}に依頼中です…
+              </p>
+            </div>
+          )}
+
           {/* 見出し */}
           <div className="flex items-start gap-3 pb-3 border-b border-white/10">
             <Avatar name={staff.name} src={staff.avatar} accent={staff.accent} size={52} />
@@ -124,7 +133,7 @@ export function AskStaffModal({ staff, onClose }: { staff: AiStaff | null; onClo
                 key={h}
                 type="button"
                 onClick={() => setRequest(h)}
-                className="text-[11px] px-2.5 py-1.5 rounded-md bg-white/[0.04] ring-1 ring-white/10 text-slate-300 hover:ring-cyan-400/40 hover:text-cyan-200 transition text-left"
+                className="text-[12px] px-3 py-2 rounded-lg bg-cyan-400/10 ring-1 ring-cyan-400/30 text-cyan-100 hover:bg-cyan-400/20 active:scale-[0.97] transition text-left"
               >
                 {h}
               </button>
@@ -143,13 +152,26 @@ export function AskStaffModal({ staff, onClose }: { staff: AiStaff | null; onClo
             type="button"
             onClick={() => void run()}
             disabled={busy || !request.trim() || !account.canEdit}
-            className="mt-3 w-full py-3 rounded-lg text-[13px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition flex items-center justify-center gap-1.5"
+            className={`mt-3 w-full py-3.5 rounded-xl text-[15px] flex items-center justify-center gap-2 ${
+              busy ? 'ask-btn-busy' : 'ask-btn'
+            }`}
           >
-            <IconSparkle className="w-4 h-4" />
-            {busy ? `${staff.name}が取りかかっています…` : `${staff.name}に依頼する`}
+            <IconSparkle className="w-5 h-5" />
+            {busy ? `${staff.name}が作業しています…` : `${staff.name}に依頼する`}
           </button>
 
-          {busy && <ProgressBar value={100} accent="gradient" height={3} />}
+          {/* 依頼中であることが、はっきり分かるようにします */}
+          {busy && (
+            <div className="mt-2 rounded-xl px-3 py-2.5 busy-banner flex items-center gap-2">
+              <span className="text-[18px] animate-pulseDot">⏳</span>
+              <div className="flex-1">
+                <p className="text-[13px] font-bold">依頼中です</p>
+                <p className="text-[11px] opacity-90">
+                  {staff.name}が考えています。20〜40秒ほどお待ちください
+                </p>
+              </div>
+            </div>
+          )}
 
           {!account.canEdit && (
             <p className="mt-2 text-[11px] text-slate-500 text-center">

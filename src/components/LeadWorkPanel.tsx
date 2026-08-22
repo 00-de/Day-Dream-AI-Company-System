@@ -103,13 +103,18 @@ export function ReportPanel() {
         type="button"
         onClick={() => void run()}
         disabled={busy || !account.canEdit}
-        className="mt-2 w-full py-2.5 rounded-lg text-[12px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition flex items-center justify-center gap-1.5"
+        className={`mt-2 w-full py-3 rounded-xl text-[13px] flex items-center justify-center gap-2 ${busy ? 'ask-btn-busy' : 'ask-btn'}`}
       >
         <IconSparkle className="w-4 h-4" />
         {busy ? '悠真AIがまとめています…' : `${SPAN_LABEL[span]}を作ってもらう`}
       </button>
 
-      {busy && <ProgressBar value={100} accent="gradient" height={3} />}
+      {busy && (
+        <div className="mt-2 rounded-xl px-3 py-2.5 busy-banner flex items-center gap-2">
+          <span className="text-[18px] animate-pulseDot">⏳</span>
+          <p className="text-[13px] font-bold">作業中です。少しお待ちください</p>
+        </div>
+      )}
 
       {error && (
         <p className="mt-2 text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2">
@@ -295,13 +300,18 @@ export function DevPanel() {
         type="button"
         onClick={() => void run()}
         disabled={busy || !request.trim() || !account.canEdit}
-        className="mt-2 w-full py-2.5 rounded-lg text-[12px] font-bold text-cyan-50 bg-cyan-500/30 ring-1 ring-cyan-400/50 hover:bg-cyan-500/45 disabled:opacity-40 transition flex items-center justify-center gap-1.5"
+        className={`mt-2 w-full py-3 rounded-xl text-[13px] flex items-center justify-center gap-2 ${busy ? 'ask-btn-busy' : 'ask-btn'}`}
       >
         <IconCode className="w-4 h-4" />
         {busy ? '拓斗AIが考えています…' : '拓斗AIに相談する'}
       </button>
 
-      {busy && <ProgressBar value={100} accent="gradient" height={3} />}
+      {busy && (
+        <div className="mt-2 rounded-xl px-3 py-2.5 busy-banner flex items-center gap-2">
+          <span className="text-[18px] animate-pulseDot">⏳</span>
+          <p className="text-[13px] font-bold">作業中です。少しお待ちください</p>
+        </div>
+      )}
 
       {error && (
         <p className="mt-2 text-[11px] text-red-300 bg-red-500/10 ring-1 ring-red-400/30 rounded-lg px-3 py-2">

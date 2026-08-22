@@ -184,7 +184,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
                 <button
                   type="button"
                   onClick={() => setAsking(selected)}
-                  className="mt-2 px-3 py-1.5 rounded-lg text-[11px] font-bold text-cyan-100 bg-cyan-500/25 ring-1 ring-cyan-400/40 hover:bg-cyan-500/40 transition"
+                  className="ask-btn-sm mt-2 px-4 py-2 rounded-lg text-[12px]"
                 >
                   {selected.name}に仕事を依頼する
                 </button>

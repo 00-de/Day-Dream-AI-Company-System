@@ -543,3 +543,88 @@ html[data-theme='bright'] header nav {
 html:not([data-theme='bright']) header nav.flex-col {
   background-color: rgba(8, 12, 26, 0.99) !important;
 }
+
+
+/* ============================================================
+   依頼ボタン（カラフル・押した状態が分かる）
+   ============================================================ */
+
+.ask-btn {
+  background: linear-gradient(100deg, #06b6d4, #3b82f6, #8b5cf6, #ec4899);
+  background-size: 250% 100%;
+  color: #ffffff !important;
+  border: none;
+  font-weight: 700;
+  box-shadow: 0 4px 14px -4px rgba(59, 130, 246, 0.6);
+  transition: background-position 0.4s ease, transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.ask-btn:hover:not(:disabled) {
+  background-position: 100% 0;
+  box-shadow: 0 6px 20px -4px rgba(139, 92, 246, 0.7);
+}
+
+/* 押している瞬間は、へこんで見えるようにします */
+.ask-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px -4px rgba(59, 130, 246, 0.8) inset;
+}
+
+/* 依頼中は、色が流れて動いていることが分かるようにします */
+.ask-btn-busy {
+  background: linear-gradient(100deg, #f59e0b, #f97316, #ec4899, #f59e0b);
+  background-size: 300% 100%;
+  color: #ffffff !important;
+  border: none;
+  font-weight: 700;
+  animation: flowing 1.6s linear infinite;
+  cursor: wait;
+}
+
+@keyframes flowing {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 300% 0;
+  }
+}
+
+/* 押せないときは、はっきり分かる薄さに */
+.ask-btn:disabled {
+  background: rgba(148, 163, 184, 0.25);
+  color: rgba(226, 232, 240, 0.6) !important;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+html[data-theme='bright'] .ask-btn:disabled {
+  background: rgba(100, 116, 139, 0.2);
+  color: rgba(71, 85, 105, 0.7) !important;
+}
+
+/* カード内の小さめの依頼ボタン */
+.ask-btn-sm {
+  background: linear-gradient(100deg, #06b6d4, #6366f1, #a855f7);
+  background-size: 200% 100%;
+  color: #ffffff !important;
+  font-weight: 700;
+  border: none;
+  transition: background-position 0.4s ease, transform 0.12s ease;
+}
+
+.ask-btn-sm:hover {
+  background-position: 100% 0;
+}
+
+.ask-btn-sm:active {
+  transform: scale(0.96);
+}
+
+/* 依頼中の帯（画面上部に出します） */
+.busy-banner {
+  background: linear-gradient(100deg, #f59e0b, #ec4899, #8b5cf6, #f59e0b);
+  background-size: 300% 100%;
+  animation: flowing 2s linear infinite;
+  color: #ffffff;
+}
