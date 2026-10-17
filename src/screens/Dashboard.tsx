@@ -125,7 +125,7 @@ export function Dashboard({ onGoStudio }: { onGoStudio: () => void }) {
                 </li>
               </ul>
             </div>
-          </Panel>
+          </Panel> <AutoReportPanel />
 
           <Panel title="今日の予定" action={<MoreLink label="週間" />}>
             <ul className="space-y-1.5">
