@@ -26,7 +26,8 @@ export const PROVIDERS = [
     name: 'openai',
     label: 'OpenAI',
     envKey: 'OPENAI_API_KEY',
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    // gpt-4o-mini は2027/1/14にAPI停止のため gpt-5.4-mini に変更
+    model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
   },
   {
     name: 'anthropic',
@@ -169,10 +170,13 @@ async function callOpenAI(key, model, system, messages, maxTokens, json) {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    // GPT-5系の注意点
+    //  ・max_tokens ではなく max_completion_tokens を使います
+    //  ・内部で「考える」分も上限に含まれるため、回答が途切れないよう余裕を足します
+    //  ・temperature の指定を受け付けないモデルがあるため、指定しません
     body: JSON.stringify({
       model,
-      temperature: 0.75,
-      max_tokens: maxTokens,
+      max_completion_tokens: Math.min(maxTokens + 2000, 8000),
       ...(json ? { response_format: { type: 'json_object' } } : {}),
       messages: [{ role: 'system', content: system }, ...messages],
     }),
