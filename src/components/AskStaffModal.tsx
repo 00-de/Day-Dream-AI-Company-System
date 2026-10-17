@@ -8,7 +8,7 @@ import { copyText, downloadText } from '../lib/integrations'
 import { ProgressBar, ACCENT } from './Ui'
 import { Avatar } from './Avatar'
 import { IconSparkle, IconCheck, IconSend } from './Icons'
-
+import { saveRequest } from '../lib/requests'
 /* ============================================================
    AI社員に仕事を依頼する画面（全23人共通）
    カードの「依頼する」ボタンから開きます
