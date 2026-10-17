@@ -12,7 +12,7 @@ import { useLibrary } from '../lib/library'
 import { formatSize } from '../lib/storage'
 import { Avatar } from '../components/Avatar'
 import { IconMusic, IconImage, IconFilm, IconMic, IconYoutube, IconCloud, IconCheck } from '../components/Icons'
-
+import { AutoReportPanel } from '../components/AutoReportPanel'
 /* ============================================================
    画面① 経営・AI社員ダッシュボード
    ============================================================ */
