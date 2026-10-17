@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useData } from '../lib/data'
 import { useAuth } from '../lib/auth'
-import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit, IconMeeting } from './Icons'
+import { IconChart, IconSparkle, IconYoutube, IconSettings, IconBell, IconUsers, IconEdit, IconMeeting,IconFolder } from './Icons'
 import { StatusDot } from './Ui'
 import { ScalePicker } from './ScalePicker'
 import { useTheme, THEME_LABEL } from '../lib/theme'
