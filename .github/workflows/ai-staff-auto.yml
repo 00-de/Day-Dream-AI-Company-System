@@ -1,0 +1,76 @@
+# ============================================================
+# AI社員の自動作業
+#
+# 決まった時刻に、アプリのAPIを呼び出します。
+# GitHub Actions は無料で使えます（公開リポジトリは無制限、
+# 非公開でも月2,000分まで。この処理は1回数秒です）。
+#
+# 時刻の指定（cron）は世界標準時（UTC）です。
+# 日本時間は UTC + 9時間 なので、9時間引いて書きます。
+#   日本時間 7:00 → UTC 22:00（前日）
+#   日本時間 9:00 → UTC  0:00
+#   日本時間 18:00 → UTC 9:00
+# ============================================================
+
+name: AI社員の自動作業
+
+on:
+  schedule:
+    # 毎朝7時（日本時間）に 悠真AI が日報を作ります
+    - cron: '0 22 * * *'
+    # 毎週月曜の朝8時（日本時間）に週報を作ります
+    - cron: '0 23 * * 0'
+    # 毎日夕方18時（日本時間）に期限切れタスクを確認します
+    - cron: '0 9 * * *'
+
+  # 手動でも実行できます（Actions画面の「Run workflow」ボタン）
+  workflow_dispatch:
+    inputs:
+      job:
+        description: '実行する仕事'
+        required: true
+        default: 'daily-report'
+        type: choice
+        options:
+          - daily-report
+          - weekly-report
+          - overdue-check
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: どの仕事を実行するか決める
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "job=${{ inputs.job }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 23 * * 0" ]; then
+            echo "job=weekly-report" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "0 9 * * *" ]; then
+            echo "job=overdue-check" >> "$GITHUB_OUTPUT"
+          else
+            echo "job=daily-report" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: AI社員に作業させる
+        run: |
+          JOB="${{ steps.pick.outputs.job }}"
+          echo "実行する仕事： $JOB"
+
+          RESPONSE=$(curl -sS -w "\n%{http_code}" \
+            -X POST \
+            -H "x-auto-key: ${{ secrets.AUTO_TASK_SECRET }}" \
+            "${{ secrets.APP_URL }}/api?fn=auto&job=$JOB")
+
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          CODE=$(echo "$RESPONSE" | tail -n 1)
+
+          echo "結果： $BODY"
+
+          if [ "$CODE" != "200" ]; then
+            echo "::error::自動作業に失敗しました（HTTP $CODE）"
+            exit 1
+          fi
+
+          echo "::notice::$JOB が完了しました"
