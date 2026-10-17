@@ -17,7 +17,7 @@ import { saveRequest } from '../lib/requests'
 export function AskStaffModal({ staff, onClose }: { staff: AiStaff | null; onClose: () => void }) {
   const { data } = useData()
   const { addTask } = useLibrary()
-  const { account } = useAuth()
+　const { account, user } = useAuth()
 
   const [request, setRequest] = useState('')
   const [extra, setExtra] = useState('')
