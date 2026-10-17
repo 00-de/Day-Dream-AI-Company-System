@@ -18,7 +18,7 @@ import { ScaleProvider } from './lib/uiScale'
 import { ThemeProvider } from './lib/theme'
 import { ScaleSettings } from './components/ScalePicker'
 import { checkAiStatus, getAiSettings, type AiSettings } from './lib/ai'
-
+import { RequestHistory } from './screens/RequestHistory'
 /* ============================================================
    DayDream AI Company System v1.1.0
    フェーズ2：Firebase Auth（社長ログイン）＋ Firestore 連携
