@@ -29,6 +29,7 @@ import sns from './_handlers/sns.js'
 const HANDLERS = {
   agent,
   ask,
+  auto,     
   chat,
   check,
   craft,
