@@ -26,7 +26,8 @@ import { useTheme, THEME_LABEL } from '../lib/theme'
    ============================================================ */
 
 export type ScreenKey = 'management' | 'studio' | 'meeting' | 'staff' | 'progress' | 'history'
-
+  { key: 'history', label: '依頼履歴', screen: 'history', icon: IconFolder },
+  { key: 'studio', label: '制作', screen: 'studio', icon: IconSparkle },
 type Tab = {
   key: string
   label: string
