@@ -10,7 +10,7 @@ import { useTheme, THEME_LABEL } from '../lib/theme'
    上部ヘッダー（画面切替タブ）
    ============================================================ */
 
-export type ScreenKey = 'management' | 'studio' | 'meeting' | 'staff' | 'progress'
+export type ScreenKey = 'management' | 'studio' | 'meeting' | 'staff' | 'progress'| 'history'
 
 type Tab = {
   key: string
