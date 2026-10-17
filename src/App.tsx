@@ -98,6 +98,7 @@ function Main() {
           {screen === 'studio' && <Studio />}
           {screen === 'staff' && <StaffBoard />}
           {screen === 'progress' && <ProgressBoard />}
+          {screen === 'history' && <RequestHistory />}
           {screen === 'meeting' && <MeetingRoom />}
         </main>
 
