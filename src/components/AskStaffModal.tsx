@@ -54,9 +54,18 @@ export function AskStaffModal({ staff, onClose }: { staff: AiStaff | null; onClo
     setBusy(true)
     setError('')
     setResult(null)
-    const r = await askStaff(staff, request.trim(), extra, data)
+       const r = await askStaff(staff, request.trim(), extra, data)
     if (r.error) setError(r.error)
-    else setResult(r)
+    else {
+      setResult(r)
+      // 依頼の内容と結果を、履歴として残します
+      void saveRequest(
+        staff,
+        { request: request.trim(), extra, source: 'AI社員ボード' },
+        r,
+        Boolean(user),
+      )
+    }
     setBusy(false)
   }
 
