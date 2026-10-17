@@ -25,7 +25,8 @@ const TABS: Tab[] = [
   { key: 'management', label: '経営', screen: 'management', icon: IconChart },
   { key: 'staff', label: 'AI社員', screen: 'staff', icon: IconUsers },
   { key: 'progress', label: '進捗状況', screen: 'progress', icon: IconChart },
-  { key: 'studio', label: '制作', screen: 'studio', icon: IconSparkle },
+　{ key: 'history', label: '依頼履歴', screen: 'history', icon: IconFolder },
+　{ key: 'studio', label: '制作', screen: 'studio', icon: IconSparkle },
   { key: 'meeting', label: '会議ルーム', screen: 'meeting', icon: IconMeeting },
   { key: 'youtube', label: 'YouTube', screen: 'studio', anchor: 'youtube', icon: IconYoutube },
 ]
